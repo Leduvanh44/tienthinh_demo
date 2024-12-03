@@ -17,7 +17,7 @@
     "classnames": "^2.3.2",
     "d3": "^7.8.5",
     "d3-org-chart": "^2.7.0",
-    "oidc-react": "^1.5.1",
+    "oidc-react": "^3.4.0",
     "react": "^18.2.0",
     "react-apexcharts": "^1.4.0",
     "react-dom": "^18.2.0",
