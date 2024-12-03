@@ -1,6 +1,6 @@
 import { HttpTransportType } from "@microsoft/signalr"
 
-const serverUrl = import.meta.env.VITE_SERVER_ADDRESS + "/workOrderHub"
+const serverUrl = import.meta.env.VITE_SERVER_ADDRESS + "/Notification"
 
 const signalrConfig = [
     serverUrl,

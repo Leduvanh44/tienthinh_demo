@@ -4,7 +4,7 @@ import cl from "classnames"
 import { MdOutlineKeyboardArrowDown, MdOutlineClose } from "react-icons/md"
 
 import { useDebounce } from "@/hooks"
-import { handleValidateSelectInput } from "@/utils/functions"
+// import { handleValidateSelectInput } from "@/utils/functions"
 
 function SelectInput({
     id,
@@ -27,7 +27,21 @@ function SelectInput({
     const [searchInput, setSearchInput] = useState("")
     const [error, setError] = useState(false)
     const debounce = useDebounce(searchInput, 200)
-
+    const handleValidateSelectInput = (length, isError, setError, setValidateRows, rowId) => {
+        if (isError) {
+            setError(isError(length))
+    
+            if (!setValidateRows) return
+            if (!isError(length)) {
+                setValidateRows((prev) => ({
+                    ...prev,
+                    valid: prev.valid.includes(rowId) ? prev.valid : [...prev.valid, rowId],
+                }))
+            } else {
+                setValidateRows((prev) => ({ ...prev, valid: prev.valid.filter((v) => v !== rowId) }))
+            }
+        }
+    }
     const optionListPosition = useMemo(() => {
         const y = containerRef.current?.getBoundingClientRect()?.top
         return y && y < window.innerHeight / 2 ? "bottom" : "top"
@@ -76,7 +90,6 @@ function SelectInput({
         setOptionList(newOpList)
     }, [debounce])
 
-    //pass validate in first render if value is valid
     useEffect(() => {
         if (typeof isError === "function" && !isError(value)) {
             handleValidateSelectInput(value, isError, setError, setValidateRows, id)

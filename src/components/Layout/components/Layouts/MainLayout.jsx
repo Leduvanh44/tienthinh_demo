@@ -11,8 +11,8 @@ import Loading from "../Loading"
 import Card from "@/components/Card"
 import { commonStoreActions } from "@/store"
 import "react-toastify/dist/ReactToastify.css"
-
 import Sidebar from "../Sidebar"
+
 function MainLayout({ children, title }) {
     const naviagte = useNavigate()
     const dispatch = useDispatch()
@@ -25,15 +25,15 @@ function MainLayout({ children, title }) {
         setShowNotifications(!showNotifications)
     }
 
-    const handleClickNotification = (item) => {
-        dispatch(commonStoreActions.readNotification(item.id))
-        item.to && naviagte(item.to)
-    }
+    // const handleClickNotification = (item) => {
+    //     dispatch(commonStoreActions.readNotification(item.id))
+    //     item.to && naviagte(item.to)
+    // }
 
-    const handleDeleteNotification = (e, id) => {
-        e.stopPropagation()
-        dispatch(commonStoreActions.deleteNotification(id))
-    }
+    // const handleDeleteNotification = (e, id) => {
+    //     e.stopPropagation()
+    //     dispatch(commonStoreActions.deleteNotification(id))
+    // }
 
     useEffect(() => {
         const documentTitle = (title ?? pageTitle) + " | Ứng dụng quản lý và giám sát năng suất máy"
@@ -42,6 +42,7 @@ function MainLayout({ children, title }) {
             setShowNotifications(false)
         })
     }, [title, pageTitle])
+    
     return (
         <div data-component="MainLayout" className="container flex h-screen overflow-hidden">
             <aside className="h-full">
@@ -51,22 +52,7 @@ function MainLayout({ children, title }) {
                 <div className="flex items-center px-5">
                     <h1 className="">{title ? title : pageTitle}</h1>
                     <div className="relative ml-auto flex">
-                        {/* {title == "Quản lý nguồn lực" && (
-                            <SelectInput
-                                label="Chọn loại máy"
-                                list={MACHINE_TYPE_LIST}
-                                value={deviceTypeState}
-                                setValue={setDeviceTypeState}
-                            />
-                        )}
-                        {title == "Đơn sản xuất" && (
-                            <SelectInput
-                                label="Chọn loại máy"
-                                list={MACHINE_TYPE_LIST}
-                                value={deviceTypeState}
-                                setValue={setDeviceTypeState}
-                            />
-                        )} */}
+
                         <i
                             className={cl(
                                 "relative flex h-12 w-12 cursor-pointer items-center justify-center rounded-full hover:bg-hoverBg",

@@ -1,13 +1,11 @@
 const paths = {
-    Dashboard: "/",
+    Dashboard: "/Dashboard",
     Data: "/Data",
     DetailData: "/Data/:id",
     Tracking: "/Tracking",
     POV: "/POV",
-    Connect: "/Connect",
-    DetailConnect: "/Connect/:devideId",
-    POV: "/POV",
     DetailPOV: "/POV/:devideId",
+    Logout:"/"
     // resource: "/resource",
     // resourceType: "/resource/:type",
     // class: "/resource/:type/class",

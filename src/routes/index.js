@@ -1,19 +1,18 @@
 import { paths } from "@/config"
 import * as Pages from "@/pages"
 const routes = [
+    {   path: paths.Logout,
+        title: "Login",
+        component: Pages.AuthForm,
+        layout: "main",
+        protected: true,
+    },
     {   path: paths.Dashboard,
         title: "Dashboard",
         component: Pages.Dashboard,
         layout: "main",
         protected: true,
     },
-    {   path: paths.Connect,
-        title: "Connect",
-        component: Pages.Connect,
-        layout: "main",
-        protected: true,
-    },
-
     {   path: paths.Data,
         title: "Data View",
         component: Pages.Data,
@@ -34,15 +33,6 @@ const routes = [
         layout: "main",
         protected: true,
     },
-
-    {
-        path: paths.DetailConnect,
-        title: null,
-        component: Pages.DetailConnect,
-        layout: "main",
-        protected: true,
-    },
-
     {
         path: paths.DetailData,
         title: null,
@@ -58,6 +48,7 @@ const routes = [
         layout: "main",
         protected: true,
     },
+
 ]
 
 export default routes

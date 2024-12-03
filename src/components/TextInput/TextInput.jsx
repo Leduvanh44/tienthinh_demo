@@ -2,13 +2,28 @@
 import { useState, useEffect } from "react"
 import cl from "classnames"
 import { useDebounce } from "@/hooks"
-import { handleValidateTextInput } from "@/utils/functions"
-
+// import { handleValidateTextInput } from "@/utils/functions"
 function TextInput({ id, label, value, setValue, disabled, className, isError, type = "text", setValidateRows }) {
     const [focus, setFocus] = useState(false)
     const [error, setError] = useState(false)
     const [inputValue, setInputValue] = useState(value || "")
     const debounce = useDebounce(inputValue, 400)
+
+    const handleValidateTextInput = (isError, setError, value, setValidateRows, rowId) => {
+        if (isError) {
+            setError(isError(value))
+    
+            if (!setValidateRows) return
+            if (isError(value)) {
+                setValidateRows((prev) => ({ ...prev, valid: prev.valid.filter((v) => v !== rowId) }))
+            } else {
+                setValidateRows((prev) => ({
+                    ...prev,
+                    valid: prev.valid.includes(rowId) ? prev.valid : [...prev.valid, rowId],
+                }))
+            }
+        }
+    }
 
     const handleBlur = () => {
         setFocus(false)

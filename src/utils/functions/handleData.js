@@ -50,7 +50,11 @@ export const getSegmentOptionList = (segments) => {
 }
 
 export const getResourceOptionsList = (items, key) => {
-    return items.map((item) => ({ value: item[key], key: item.name }))
+    return items.map((item) => {
+        const result = { value: item[key], key: item.name }
+        console.log(result);
+        return result;
+    });
 }
 export const getPrerequisteOperationList = (items, valueKey, keyKey) => {
     return items.map((item) => ({ value: item[valueKey], key: item[keyKey] }))
@@ -490,6 +494,89 @@ export const handleOeePageHeader = (mode) => {
             return []
     }
 }
+
+export const DownTimePageHeader = [
+    {
+        Header: "Tên máy",
+        accessor: "equipmentId",
+        disableSortBy: false,
+    },
+    {
+        Header: "Đổi màu",
+        accessor: "đổi màu",
+        disableSortBy: false,
+    },
+    {
+        Header: "Khuôn hư",
+        accessor: "khuôn hư",
+        disableSortBy: false,
+    },
+    {
+        Header: "Thay khuôn",
+        accessor: "thay khuôn",
+        disableSortBy: false,
+    },
+    {
+        Header: "Chỉnh máy",
+        accessor: "canh chỉnh máy",
+        disableSortBy: false,
+    },
+    {
+        Header: "Đợi nhiệt",
+        accessor: "đợi nhiệt",
+        disableSortBy: false,
+    },
+    {
+        Header: "Máy hư",
+        accessor: "máy hư",
+        disableSortBy: false,
+    },
+    {
+        Header: "Nghẹt nước",
+        accessor: "nghẹt nước",
+        disableSortBy: false,
+    },
+    {
+        Header: "Thiếu người",
+        accessor: "thiếu người",
+        disableSortBy: false,
+    },
+    {
+        Header: "Thiếu NVL/BTP",
+        accessor: "thiếu NVL/BTP",
+        disableSortBy: false,
+    },
+    {
+        Header: "Ăn cơm",
+        accessor: "ăn cơm",
+        disableSortBy: false,
+    },
+    {
+        Header: "Không có KHSY",
+        accessor: "không có KHSY",
+        disableSortBy: false,
+    },
+    {
+        Header: "Bảo trì dự phòng",
+        accessor: "bảo trì dự phòng",
+        disableSortBy: false,
+    },
+    {
+        Header: "Test mẫu",
+        accessor: "test mẫu",
+        disableSortBy: false,
+    },
+    {
+        Header: "Cúp điện",
+        accessor: "cúp điện",
+        disableSortBy: false,
+    },
+    {
+        Header: "Tổng",
+        accessor: "Total",
+        disableSortBy: false,
+    },
+]
 
 export const getWorkHoursPerDay = (shifts) => {
     const hoursPerDay = shifts.reduce((acc, crr) => {
