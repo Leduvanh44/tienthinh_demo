@@ -64,7 +64,7 @@ const LoginForm = () => {
         console.error("Login error:", error);
       } finally {
         setIsLoading(false);
-        handleClick("/Dashboard");
+        handleClick("/Data");
       }
     }
   };
