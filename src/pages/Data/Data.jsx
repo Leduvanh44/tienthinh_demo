@@ -91,7 +91,13 @@ const Data = () => {
     return cabinetData.map(cabinet => {
         const deviceIds = cabinet.devices.map(device => device.deviceId);
         const errors = [...errorFI, ...errorHC];
-        const errorCount = errors.filter(error => deviceIds.includes(error.DeviceId) && error.TagValue === 1).length;
+
+        const errorCount = errors.filter(
+          error =>
+            deviceIds.includes(error.DeviceId) && 
+            error.TagValue === 1 && 
+            error.DeviceId !== "MD8/HeatController/2" 
+        ).length;
         const isError = errorCount > 0;
         const firstValue = statusData[1]?.TagValue ?? 0;
         const secondValue = statusData[2]?.TagValue ?? 0;
@@ -99,7 +105,7 @@ const Data = () => {
             return {
                 id: cabinet.cabinetId, 
                 name: cabinet.cabinetId,   
-                status: "operate",
+                status: "operating",
                 errors: errorCount,
                 isError: isError       
             };
