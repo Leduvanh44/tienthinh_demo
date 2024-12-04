@@ -2,8 +2,8 @@ const paths = {
     // Dashboard: "/Dashboard",
     Data: "/Data",
     DetailData: "/Data/:id",
-    Tracking: "/Tracking",
-    POV: "/POV",
+    Tracking: "/Error",
+    POV: "/Report",
     DetailPOV: "/POV/:devideId",
     Logout:"/"
     // resource: "/resource",
