@@ -55,7 +55,6 @@ const LoginForm = () => {
     if (validateForm()) {
       setIsLoading(true);
       try {
-        // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 2000));
         const updatedFormData = { ...formData, isLogin: true };
         localStorage.setItem("loginData", JSON.stringify(updatedFormData));

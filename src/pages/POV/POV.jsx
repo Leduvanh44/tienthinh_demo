@@ -9,6 +9,7 @@ import SelectInput from "@/components/SelectInput"
 import Button from "@/components/Button"
 import { useCallApi } from "@/hooks"
 import { CabinetsApi } from "../../services/api"
+import { toast } from "react-toastify";
 
 const POV = () => {
   const [dayStart, setDayStart] = useState(() => {
@@ -29,7 +30,6 @@ const POV = () => {
   const callApi = useCallApi()
   const handleExportdata = (CabinetId, WorkOrder, Customer, Enamel, Size, StartTime, EndTime) => {
     const url = import.meta.env.VITE_SERVER_ADDRESS +`/api/Cabinets/Export?CabinetId=${CabinetId}&WorkOrder=${WorkOrder}&Customer=${Customer}&Enamel=${Enamel}&Size=${Size}&StartTime=${StartTime}&EndTime=${EndTime}`;
-
     callApi(
         () => fetch(url, { method: "GET" }),
         async (response) => {
@@ -42,8 +42,9 @@ const POV = () => {
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
-
+                toast.success("Xuất tệp Excel thành công!");
             } else {
+                toast.error("Không thể xuất tệp Excel, vui lòng thử lại.");
                 throw new Error("Không thể xuất tệp Excel, vui lòng thử lại.");
             }
         },
@@ -76,8 +77,11 @@ const POV = () => {
             <SelectInput
                 label={`Chọn mã tủ: `}
                 list={[
-                  { value: "MD8", key: "MD08" },
-                  { value: "MD9", key: "MD09" },
+                  { value: "MD08", key: "MD08" },
+                  { value: "MD01", key: "MD01" },
+                  { value: "MD02", key: "MD02" },
+                  { value: "MD03", key: "MD03" },
+                  { value: "MD04", key: "MD04" },
                 ]}
                 value={cabinetId}
                 setValue={setCabinetId}
@@ -144,7 +148,9 @@ const POV = () => {
     >
       Xuất báo cáo
     </Button>
-  </div>
+    {/* <ToastContainer position="top-right" autoClose={3000} /> */}
+      </div>
+  
 )};
 export default POV;
 

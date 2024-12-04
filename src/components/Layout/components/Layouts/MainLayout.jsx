@@ -16,7 +16,7 @@ function MainLayout({ children, title }) {
     const naviagte = useNavigate()
     const dispatch = useDispatch()
     const { pageTitle, loading, notifications, unRead } = useSelector((state) => state.common)
-    const [showNotifications, setShowNotifications] = useState(false)
+    const [showNotifications, setShowNotifications] = useState(true)
     const [deviceTypeState, setDeviceTypeState] = useState("0")
 
     const handleShowNotifications = (e) => {
