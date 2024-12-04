@@ -40,63 +40,78 @@ function Sidebar() {
         console.log("Login data has been reset");
       };
     return (
-        <div
-            data-component="Sidebar"
-            className={cl(
-                "transition-width relative h-full bg-primary-5 text-neutron-4 duration-200",
-                "scroll-y h-full",
-                {
-                    "visible w-[200px] px-5 py-5 sm:w-screen": isExpand,
-                    "w-[80px] px-2 py-2 sm:invisible sm:w-0": !isExpand,
-                },
-            )}
-            onMouseEnter={() => setIsExpand(true)}
-            onMouseLeave={handleCloseSidebar}
-        >
-            <div
-                className="mx-auto aspect-square w-full cursor-pointer rounded-xl bg-neutron-4 sm:w-1/2"
-                onClick={() => handleClick("/Dashboard")}
-            >
-                <img src="/bker.png" className="mx-auto aspect-square w-full cursor-pointer rounded-xl sm:w-1/2 px-2 py-2"></img>
-            </div>
-            
-            <div className={cl("sticky top-1/3 xxl:top-0")}>
-                {SIDEBAR_ITEMS.slice(0, -1).map((item, index) => (
-                    <SidebarItem
-                        key={index}
-                        Icon={item.icon}
-                        label={item.label}
-                        actived={currentPath.includes(item.route)}
-                        isExpand={isExpand}
-                        onClick={() => handleClick(item.route)}
-                    />
-                ))}
-                <SidebarItem
-                    key="last-item"
-                    Icon={lastItem.icon}
-                    label={lastItem.label}
-                    actived={false}
-                    isExpand={isExpand}
-                    onClick={() => handleClick(lastItem.route)}
-                />
-            </div>
-            <i
-                className={cl(
-                    "absolute bottom-5 right-5 flex h-11 w-11 cursor-pointer",
-                    "items-center justify-center rounded-full text-4xl hover:bg-hoverBg",
-                    {
-                        "sm:visible sm:fixed sm:left-0 sm:text-accent-1": !isExpand,
-                        "xl:static xl:float-right": isExpand,
-                    },
-                )}
-            >
-                {/* {isExpand ? (
-                    <BsArrowBarLeft onClick={() => setIsExpand(false)} />
-                ) : (
-                    <BsArrowBarRight onClick={() => setIsExpand(true)} />
-                )} */}
-            </i>
-        </div>
+<div
+    data-component="Sidebar"
+    className={cl(
+        "transition-width relative flex flex-col h-full bg-primary-5 text-neutron-4 duration-200",
+        "scroll-y h-full",
+        {
+            "visible w-[200px] px-5 py-5 sm:w-screen": isExpand,
+            "w-[80px] px-2 py-2 sm:invisible sm:w-0": !isExpand,
+        },
+    )}
+    onMouseEnter={() => setIsExpand(true)}
+    onMouseLeave={handleCloseSidebar}
+>
+    <div
+        className="mx-auto aspect-square w-full cursor-pointer rounded-xl bg-neutron-4 "
+        onClick={() => handleClick("/Data")}
+    >
+        <img
+            src="/28.png"
+            className="mx-auto aspect-square w-full cursor-pointer rounded-xl sm:w-1/2 px-2 py-2"
+        ></img>
+                {/* <img
+            src="/bker.png"
+            className="mx-auto aspect-square w-full cursor-pointer rounded-xl px-2 py-2 sm:w-1/4"
+        ></img> */}
+    </div>
+
+    <div className={cl("sticky top-1/3 xxl:top-0")}>
+        {SIDEBAR_ITEMS.slice(0, -1).map((item, index) => (
+            <SidebarItem
+                key={index}
+                Icon={item.icon}
+                label={item.label}
+                actived={currentPath.includes(item.route)}
+                isExpand={isExpand}
+                onClick={() => handleClick(item.route)}
+            />
+        ))}
+        <SidebarItem
+            key="last-item"
+            Icon={lastItem.icon}
+            label={lastItem.label}
+            actived={false}
+            isExpand={isExpand}
+            onClick={() => handleClick(lastItem.route)}
+        />
+    </div>
+    <i
+        className={cl(
+            "absolute bottom-5 right-5 flex h-11 w-11 cursor-pointer",
+            "items-center justify-center rounded-full text-4xl hover:bg-hoverBg",
+            {
+                "sm:visible sm:fixed sm:left-0 sm:text-accent-1": !isExpand,
+                "xl:static xl:float-right": isExpand,
+            },
+        )}
+    >
+        {/* {isExpand ? (
+            <BsArrowBarLeft onClick={() => setIsExpand(false)} />
+        ) : (
+            <BsArrowBarRight onClick={() => setIsExpand(true)} />
+        )} */}
+    </i>
+
+    {/* <div className="mt-auto mx-auto aspect-square w-full cursor-pointer rounded-xl">
+        <img
+            src="/bker.png"
+            className="mx-auto aspect-square w-full cursor-pointer rounded-xl px-2 py-2"
+        ></img>
+    </div> */}
+</div>
+
     )
 }
 

@@ -1,5 +1,5 @@
 const paths = {
-    Dashboard: "/Dashboard",
+    // Dashboard: "/Dashboard",
     Data: "/Data",
     DetailData: "/Data/:id",
     Tracking: "/Tracking",

@@ -6,6 +6,7 @@ import TemperatureMonitorCard from "@/components/TemperatureMonitoringCard";
 import VelocityMonitorCard from "@/components/TemperatureMonitoringCard/VelocityMonitorCard";
 import { current } from "@reduxjs/toolkit";
 import hubConnection from "@/services/signalr/productionProgress/hubConnection"
+import Loading from "../../components/Layout/components/Loading/Loading";
 
 
 const DetailData = () => {
@@ -104,52 +105,22 @@ const DetailData = () => {
 
   const [cabinets, setCabinets] = useState([]);
   const [devices, setDevices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [intervalId, setIntervalId] = useState(null);
   const [connection, setConnection] = useState()
 
-  const [presentValueFI, setPresentValueFI] = useState(() => {
-    const savedData = localStorage.getItem("presentValueFI");
-    return savedData ? JSON.parse(savedData) : [];
-  });
+  const [presentValueFI, setPresentValueFI] = useState([]);
 
-  const [errorFI, setErrorFI] = useState(() => {
-    const savedData = localStorage.getItem("errorFI");
-    return savedData ? JSON.parse(savedData) : [];
-  });
+  const [errorFI, setErrorFI] = useState([]);
 
-  const [setValueHC, setSetValueHC] = useState(() => {
-    const savedData = localStorage.getItem("setValueHC");
-    return savedData ? JSON.parse(savedData) : [];
-  });
+  const [setValueHC, setSetValueHC] = useState([]);
 
-  const [errorHC, setErrorHC] = useState(() => {
-    const savedData = localStorage.getItem("errorHC");
-    return savedData ? JSON.parse(savedData) : [];
-  });
+  const [errorHC, setErrorHC] = useState([]);  
 
-  const [presentValueHC, setPresentValueHC] = useState(() => {
-    const savedData = localStorage.getItem("presentValueHC");
-    return savedData ? JSON.parse(savedData) : [];
-  });
+  const [presentValueHC, setPresentValueHC] = useState([]);
 
-  const [AlarmLowThresholdValueHC, setAlarmLowThresholdValueHC] = useState(() => {
-    const savedData = localStorage.getItem("AlarmLowThresholdValueHC");
-    return savedData ? JSON.parse(savedData) : [];
-  });
-
-  const [AlarmHighThresholdValueHC, setAlarmHighThresholdValueHC] = useState(() => {
-    const savedData = localStorage.getItem("AlarmHighThresholdValueHC");
-    return savedData ? JSON.parse(savedData) : [];
-  });
-
-  useEffect(() => {
-    localStorage.setItem("presentValueFI", JSON.stringify(presentValueFI));
-    localStorage.setItem("errorFI", JSON.stringify(errorFI));
-    localStorage.setItem("setValueHC", JSON.stringify(setValueHC));
-    localStorage.setItem("errorHC", JSON.stringify(errorHC));
-    localStorage.setItem("presentValueHC", JSON.stringify(presentValueHC));
-    localStorage.setItem("AlarmLowThresholdValueHC", JSON.stringify(AlarmLowThresholdValueHC));
-    localStorage.setItem("AlarmHighThresholdValueHC", JSON.stringify(AlarmHighThresholdValueHC));
-  }, [presentValueFI, errorFI, setValueHC, errorHC, presentValueHC, AlarmLowThresholdValueHC, AlarmHighThresholdValueHC]);
+  const [AlarmLowThresholdValueHC, setAlarmLowThresholdValueHC] = useState([]);
+  const [AlarmHighThresholdValueHC, setAlarmHighThresholdValueHC] = useState([]);
 
   useEffect(() => {
   hubConnection.start().then((connection) => {
@@ -157,40 +128,61 @@ const DetailData = () => {
   })
   }, [])
   useEffect(() => {
-      if (connection) {
-          connection.on("OnTagChanged", (data) => {
-              // setDataMqtt(JSON.parse(data))
-              // console.log("dataMqtt: ", data)
-              if (JSON.parse(data).length == 7) {
-                  if (JSON.parse(data)[0].DeviceType === "PresentValue") {
-                      setPresentValueHC(JSON.parse(data))
-                  }
-                  else if (JSON.parse(data)[0].DeviceType === "SetValue") {
-                      setSetValueHC(JSON.parse(data))
-                  }
-                  else if (JSON.parse(data)[0].DeviceType === "AlarmLowThresholdValue") {
-                      setAlarmLowThresholdValueHC(JSON.parse(data))
-                  }
-                  else if (JSON.parse(data)[0].DeviceType === "AlarmHighThresholdValue") {
-                      setAlarmHighThresholdValueHC(JSON.parse(data))
-                  }
-                  else {
-                      setErrorHC(JSON.parse(data))
-                  }
-              }
-              else if (JSON.parse(data).length == 5) {
-                  setPresentValueFI(JSON.parse(data))
-              }
-              else {
-                  setErrorFI(JSON.parse(data))
-              }        
-          })
-      }
-  }, [connection])
+    if (connection) {
+        const id = setInterval(async () => {
+            if (connection.state === 'Connected') {
+                try {
+                    const data = await connection.invoke('SendAll');
+                    const parsedData = JSON.parse(data);
+                    const presentValueFanInverterData = [];
+                    const presentValueHeatControllerData = [];
+                    const setValueHeatControllerData = [];
+                    const alarmLowThresholdValueData = [];
+                    const alarmHighThresholdValueData = [];
+                    const errorFanInverterData = [];
+                    const errorHeatControllerData = [];
+                    parsedData.forEach(item => {
+                    if (item.MessageType === "PresentValue" && item.DeviceId.includes("FanInverter")) {
+                    presentValueFanInverterData.push(item);
+                    } else if (item.MessageType === "PresentValue" && item.DeviceId.includes("HeatController")) {
+                    presentValueHeatControllerData.push(item);
+                    } else if (item.MessageType === "SetValue" && item.DeviceId.includes("HeatController")) {
+                        setValueHeatControllerData.push(item);
+                    } else if (item.MessageType === "AlarmLowThresholdValue") {
+                    alarmLowThresholdValueData.push(item);
+                    } else if (item.MessageType === "AlarmHighThresholdValue") {
+                    alarmHighThresholdValueData.push(item);
+                    } else if (item.MessageType === "Error" && item.DeviceId.includes("HeatController")) {
+                        errorHeatControllerData.push(item);
+                    } else if (item.MessageType === "Error" && item.DeviceId.includes("FanInverter")) {
+                        errorFanInverterData.push(item);
+                    }
+                    });
+                    setPresentValueHC(presentValueHeatControllerData);
+                    setPresentValueFI(presentValueFanInverterData);
+                    setAlarmLowThresholdValueHC(alarmLowThresholdValueData);
+                    setAlarmHighThresholdValueHC(alarmHighThresholdValueData);
+                    setErrorFI(errorFanInverterData);
+                    setErrorHC(errorHeatControllerData);
+                    setSetValueHC(setValueHeatControllerData);
+                    setLoading(false);
+                } catch (error) {
+                    console.error('Error invoking SendAll:', error);
+                }
+            }
+        }, 5000); 
+        setIntervalId(id);
+
+        return () => {
+            clearInterval(id); 
+        };
+    }
+}, [connection]);
 
     console.log("presentValueFI: ", presentValueFI)
     console.log("presentValueHC: ", presentValueHC)
-
+    console.log("AlarmLowThresholdValueHC: ", AlarmLowThresholdValueHC)
+    console.log("AlarmHighThresholdValueHC: ", AlarmHighThresholdValueHC)
 
   const velocityData = presentValueFI.map((item, index) => {
       const correspondingDevice = data.dev.find(
@@ -235,7 +227,7 @@ const DetailData = () => {
     };
   });
 
-// console.log(temperatureData);
+console.log(temperatureData);
 // console.log(presentValueHC);
 
   const [showSettings, setShowSettings] = useState(false);
@@ -285,7 +277,7 @@ const DetailData = () => {
       </div>
     )}
   </div>
-
+  {loading && <Loading />}
   </div>
   );
 };

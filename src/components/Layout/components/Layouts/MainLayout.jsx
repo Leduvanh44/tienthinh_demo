@@ -6,7 +6,6 @@ import { BsBell, BsCheck2All } from "react-icons/bs"
 import { RiDeleteBin4Line } from "react-icons/ri"
 import cl from "classnames"
 
-
 import Loading from "../Loading"
 import Card from "@/components/Card"
 import { commonStoreActions } from "@/store"
@@ -36,7 +35,7 @@ function MainLayout({ children, title }) {
     // }
 
     useEffect(() => {
-        const documentTitle = (title ?? pageTitle) + " | Ứng dụng quản lý và giám sát năng suất máy"
+        const documentTitle = (title ?? pageTitle) + " | Ứng dụng giám sát tủ điện tráng men"
         document.title = documentTitle
         document.addEventListener("click", () => {
             setShowNotifications(false)

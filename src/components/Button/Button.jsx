@@ -13,7 +13,7 @@ function Button({ children, small, large, className, transparent, onClick, disab
                     "rounded-lg px-4": childrenType === "string",
                     "aspect-square rounded-full": childrenType === "icon",
                     "bg-transparent text-neutron-1": transparent,
-                    "bg-accent-1 text-neutron-4": !transparent,
+                    "bg-primary-1 text-neutron-4": !transparent,
                     "text-16-b h-[30px] bg-primary-2": small,
                     "heading-20-b h-[50px]": large,
                     "heading-20-b h-10": !(small || large),
