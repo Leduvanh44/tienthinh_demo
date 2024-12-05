@@ -1,5 +1,6 @@
+/** @type {import('tailwindcss').Config} */
 module.exports = {
-    content: ["./index.html", "./src/**/*.{js,jsx,ts,tsx}"], // Kết hợp tất cả các đường dẫn
+    content: ["./index.html", "./src/**/*.{js,jsx,ts,tsx}"],
     theme: {
       extend: {
         boxShadow: {

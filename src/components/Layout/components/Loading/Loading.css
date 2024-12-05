@@ -1,27 +1,14 @@
-.wobbling-4 {
-    width: 20px;
-    height: 20px;
-    background: #fc8403;
-    box-shadow: 0 0 60px 30px #fc8403;
-    transform: translateX(-150px);
-    clip-path: inset(0);
-    animation: w4-1 0.5s ease-in-out infinite alternate, w4-2 1s ease-in-out infinite;
+.spinner {
+    width: 60px;
+    height: 60px;
+    border: 10px solid transparent;
+    border-top: 10px solid #180f7a; 
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
-@keyframes w4-1 {
+@keyframes spin {
     100% {
-        transform: translateX(150px);
-    }
-}
-
-@keyframes w4-2 {
-    33% {
-        clip-path: inset(0 0 0 -100px);
-    }
-    50% {
-        clip-path: inset(0 0 0 0);
-    }
-    83% {
-        clip-path: inset(0 -100px 0 0);
+        transform: rotate(360deg);
     }
 }
