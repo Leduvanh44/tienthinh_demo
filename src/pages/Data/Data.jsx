@@ -210,7 +210,7 @@ const Data = () => {
               />
             </div>
           ))}
-          {cabinetFake.map((cabinet) => (
+          {/* {cabinetFake.map((cabinet) => (
             <div
               key={cabinet.id}
               className="flex-shrink-0" // Prevent shrinking
@@ -229,7 +229,7 @@ const Data = () => {
                 width={300}
               />
             </div>
-          ))}
+          ))} */}
         </div>
       </main>
       {loading && <Loading />}

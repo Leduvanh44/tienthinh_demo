@@ -78,10 +78,6 @@ const POV = () => {
                 label={`Chọn mã tủ: `}
                 list={[
                   { value: "MD08", key: "MD08" },
-                  { value: "MD01", key: "MD01" },
-                  { value: "MD02", key: "MD02" },
-                  { value: "MD03", key: "MD03" },
-                  { value: "MD04", key: "MD04" },
                 ]}
                 value={cabinetId}
                 setValue={setCabinetId}
@@ -110,7 +106,7 @@ const POV = () => {
           <div className="p-1 ">
               <TextInput
                   className="h-[64px] w-60"
-                  label="Lệnh Sản xuất: "
+                  label="Lệnh sản xuất: "
                   value={workOrder}
                   setValue={setWorkOrder}
               />

@@ -10,28 +10,28 @@ const ErrorHistoryNotifications = () => {
       id: 1,
       timestamp: "2024-01-20T10:30:00",
       errorCode: "ERR_001",
-      description: "Database connection failed",
+      description: "MD08/HC1 Quá nhiệt",
       status: "unresolved",
       expanded: false,
-      resolution: "Check database credentials and network connectivity"
+      resolution: "Checked"
     },
     {
       id: 2,
       timestamp: "2024-01-20T09:15:00",
       errorCode: "ERR_002",
-      description: "API request timeout",
+      description: "MD08/HC2 Thiếu nhiệt",
       status: "resolved",
       expanded: false,
-      resolution: "Increase request timeout limit and retry"
+      resolution: "Checked"
     },
     {
       id: 3,
       timestamp: "2024-01-20T08:45:00",
       errorCode: "ERR_003",
-      description: "Authentication failed",
+      description: "Lỗi biến tần MD08/IF1",
       status: "unresolved",
       expanded: false,
-      resolution: "Verify user credentials and token validity"
+      resolution: "Checked"
     }
   ]);
 
