@@ -8,7 +8,7 @@ export default function App() {
     
     return (
         <div className="container flex h-screen overflow-hidden">
-        <ToastContainer pauseOnFocusLoss={false} autoClose={3000} />
+        <ToastContainer pauseOnFocusLoss={false} autoClose={5000} />
             <Routes>
                 {routes.map((route, index) => (
                     <Route

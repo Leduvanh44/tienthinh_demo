@@ -10,6 +10,7 @@ import Button from "@/components/Button"
 import { useCallApi } from "@/hooks"
 import { CabinetsApi } from "../../services/api"
 import { toast } from "react-toastify";
+import Loading from "../../components/Layout/components/Loading/Loading";
 
 const POV = () => {
   const [dayStart, setDayStart] = useState(() => {
@@ -26,10 +27,31 @@ const POV = () => {
   const [size, setSize] = useState()
   const [enamel, setEnamel] = useState("")
   const [cabinetId, setCabinetId] = useState("")
+  const [loading, setLoading] = useState(false);
 
   const callApi = useCallApi()
   const handleExportdata = (CabinetId, WorkOrder, Customer, Enamel, Size, StartTime, EndTime) => {
+    const missingFields = [];
+    if (!CabinetId) missingFields.push("Mã tủ");
+    if (!WorkOrder) missingFields.push("Lệnh sản xuất");
+    if (!Customer) missingFields.push("Khách hàng");
+    if (!Enamel) missingFields.push("Loại men");
+    if (!Size) missingFields.push("Kích thước dây");
+    if (!StartTime) missingFields.push("Ngày bắt đầu");
+    if (!EndTime) missingFields.push("Ngày kết thúc");
+
+    if (missingFields.length > 0) {
+        toast.error(`Vui lòng nhập đầy đủ thông tin: ${missingFields.join(", ")}`);
+        return;
+    }
+
+    if (isNaN(Size)) {
+        toast.error("Kích thước dây phải là một số!");
+        return;
+    }
+    setLoading(true)
     const url = import.meta.env.VITE_SERVER_ADDRESS +`/api/Cabinets/Export?CabinetId=${CabinetId}&WorkOrder=${WorkOrder}&Customer=${Customer}&Enamel=${Enamel}&Size=${Size}&StartTime=${StartTime}&EndTime=${EndTime}`;
+    console.log(url)
     callApi(
         () => fetch(url, { method: "GET" }),
         async (response) => {
@@ -42,8 +64,10 @@ const POV = () => {
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
+                setLoading(false)                
                 toast.success("Xuất tệp Excel thành công!");
             } else {
+                setLoading(false)
                 toast.error("Không thể xuất tệp Excel, vui lòng thử lại.");
                 throw new Error("Không thể xuất tệp Excel, vui lòng thử lại.");
             }
@@ -144,6 +168,7 @@ const POV = () => {
     >
       Xuất báo cáo
     </Button>
+    {loading && <Loading />}
     {/* <ToastContainer position="top-right" autoClose={3000} /> */}
       </div>
   
