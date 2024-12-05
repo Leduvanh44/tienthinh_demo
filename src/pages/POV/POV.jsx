@@ -143,7 +143,6 @@ const POV = () => {
                   value={customer}
                   setValue={setCustomer}
                   placeholder="(...ABC)"
-                  isError="function"
 
               />
           </div>
