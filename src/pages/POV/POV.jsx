@@ -99,7 +99,7 @@ const POV = () => {
         <Card className="relative grow cursor-pointer" >
         <div className="p-1 w-[25%]">
             <SelectInput
-                label={`Chọn mã tủ: `}
+                label={`Chọn mã tủ*`}
                 list={[
                   { value: "MD08", key: "MD08" },
                 ]}
@@ -110,7 +110,7 @@ const POV = () => {
           <div className="p-1">
               <DateInput
                   className=""
-                  label="Chọn ngày bắt đầu"
+                  label="Chọn ngày bắt đầu *"
                   value={dayStart}
                   setValue={setDayStart}
                   type="dayStart"
@@ -120,7 +120,7 @@ const POV = () => {
           <div className="p-1 ">
               <DateInput
                   className=""
-                  label="Chọn ngày kết thúc"
+                  label="Chọn ngày kết thúc *"
                   value={dayEnd}
                   setValue={setDayEnd}
                   type="dayEnd"
@@ -130,33 +130,39 @@ const POV = () => {
           <div className="p-1 ">
               <TextInput
                   className="h-[64px] w-60"
-                  label="Lệnh sản xuất: "
+                  label="Lệnh sản xuất * "
                   value={workOrder}
                   setValue={setWorkOrder}
+                  placeholder="(...1024)"
               />
           </div>
           <div className="p-1 ">
               <TextInput
                   className="h-[64px] w-60"
-                  label="Khách hàng: "
+                  label="Khách hàng *"
                   value={customer}
                   setValue={setCustomer}
+                  placeholder="(...ABC)"
+                  isError="function"
+
               />
           </div>
           <div className="p-1 ">
               <TextInput
                   className="h-[64px] w-60"
-                  label="Kích thước dây: "
+                  label="Kích thước dây *"
                   value={size}
                   setValue={setSize}
+                  placeholder="(...22)"
               />
           </div>
           <div className="p-1 ">
               <TextInput
                   className="h-[64px] w-60"
-                  label="Loại men: "
+                  label="Loại men *"
                   value={enamel}
                   setValue={setEnamel}
+                  placeholder="(...ABC)"
               />
           </div>
         </Card>
