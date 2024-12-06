@@ -5,9 +5,9 @@ import { useNavigate } from "react-router-dom"
 
 const CabinetCard = ({ id, name, status, errors, isError, handleClickDetail, height, width}) => {
   const getStatusColor = (status, isError) => {
-    if (isError) {
-      return "bg-red-500"; 
-    }
+    // if (isError) {
+    //   return "bg-red-500"; 
+    // }
     switch (status) {
       case "operating":
         return "bg-green-500"; 
@@ -24,16 +24,16 @@ const CabinetCard = ({ id, name, status, errors, isError, handleClickDetail, hei
   };
 
   const getStatusIcon = (status, isError) => {
-    if (isError) {
-      return <FaExclamationTriangle className="text-white" />;
-    }
+    // if (isError) {
+    //   return <FaExclamationTriangle className="text-white" />;
+    // }
     switch (status) {
       case "operating":
         return <FaCheck className="text-white" />;
       case "stopped":
         return <FaTimes className="text-white" />;
       default:
-        return null;
+        return <FaTimes className="text-white" />;
     }
   };
 

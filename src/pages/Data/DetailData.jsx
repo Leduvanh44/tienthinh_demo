@@ -204,18 +204,12 @@ const DetailData = () => {
     let setPoint;
     let alarmLow;
     let alarmHigh;
-    if (index!=2) {
+
       currentTemp = presentValueHC[index]?.TagValue || null;
       setPoint = setValueHC[index]?.TagValue || null;
       alarmLow = AlarmLowThresholdValueHC[index]?.TagValue || null;
       alarmHigh = AlarmHighThresholdValueHC[index]?.TagValue || null;
-    }
-    else {
-      currentTemp = presentValueHC[index]?.TagValue || null;
-      setPoint = setValueHC[index]?.TagValue || null;
-      alarmLow = (setValueHC[index]?.TagValue - AlarmHighThresholdValueHC[index]?.TagValue) || null;
-      alarmHigh = (setValueHC[index]?.TagValue + AlarmHighThresholdValueHC[index]?.TagValue) || null; 
-    }
+
 
     return {
       id,

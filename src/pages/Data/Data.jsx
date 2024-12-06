@@ -101,7 +101,7 @@ const Data = () => {
         const isError = errorCount > 0;
         const firstValue = statusData[1]?.TagValue ?? 0;
         const secondValue = statusData[2]?.TagValue ?? 0;
-        if (firstValue > 0 && secondValue > 0) {
+        if (firstValue > 0 && secondValue > 10) {
             return {
                 id: cabinet.cabinetId, 
                 name: cabinet.cabinetId,   
@@ -113,7 +113,7 @@ const Data = () => {
             return {
                 id: cabinet.cabinetId,
                 name: cabinet.cabinetId,
-                status: "closed",
+                status: "stopped",
                 errors: errorCount,
                 isError: isError
             };

@@ -194,7 +194,7 @@ const Dashboard = () => {
                 return {
                     id: cabinet.cabinetId, 
                     name: cabinet.cabinetId,   
-                    status: "operate",
+                    status: "operating",
                     errors: cabinet.errorCount,
                     isError: isError       
                 };
@@ -202,7 +202,7 @@ const Dashboard = () => {
                 return {
                     id: cabinet.cabinetId, 
                     name: cabinet.cabinetId,   
-                    status: "closed",
+                    status: "stopped",
                     errors: cabinet.errorCount,
                     isError: isError       
                 };
