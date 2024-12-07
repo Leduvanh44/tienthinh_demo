@@ -209,8 +209,7 @@ const DetailData = () => {
       setPoint = setValueHC[index]?.TagValue || null;
       alarmLow = AlarmLowThresholdValueHC[index]?.TagValue || null;
       alarmHigh = AlarmHighThresholdValueHC[index]?.TagValue || null;
-
-
+      
     return {
       id,
       name,

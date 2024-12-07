@@ -18,7 +18,7 @@ const CabinetCard = ({ id, name, status, errors, isError, handleClickDetail, hei
     }
   };
   const getCardColor = (isError) => {
-    if (isError) {
+    if (isError && (status === "operating")) {
       return "bg-red-100"; 
     }
   };

@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
 import { FiSettings, FiAlertCircle } from "react-icons/fi";
 
 const TemperatureMonitorCard = ({
@@ -11,10 +11,31 @@ const TemperatureMonitorCard = ({
   history,
   onSettingsClick,
 }) => {
+
+  const [deviceIsOff, setDeviceIsOff] = useState(false);
+
+  useEffect(() => {
+    if (
+      currentTemp === -1 &&
+      setPoint === -1
+    ) {
+      setDeviceIsOff(true);
+    } else {
+      setDeviceIsOff(false);
+    }
+  }, [currentTemp, setPoint, alarmLow, alarmHigh]);
+
+
   const getTemperatureColor = (temp, setPoint, alarmLow, alarmHigh) => {
     if (temp >= alarmHigh || temp <= alarmLow) return "bg-red-500";
     return "bg-green-500";
   };
+
+  const getTemperatureBachground = (temp, alarmLow, alarmHigh) => {
+    if (!deviceIsOff && (temp >= alarmHigh || temp <= alarmLow)) return "bg-red-200";
+    return "bg-white";
+  };
+
 
   const calculateHeight = (temp, setPoint, alarmLow, alarmHigh) => {
     let minTemp = alarmLow-20;
@@ -23,11 +44,10 @@ const TemperatureMonitorCard = ({
     // console.log(minTemp, maxTemp)
     return Math.min(Math.max(percentage, 0), 100);
   };
-
   return (
     <div
       key={id}
-      className="bg-white rounded-lg shadow-lg p-6 cursor-pointer transform transition-transform hover:scale-105 w-[300px] h-[400px]"
+      className={`${getTemperatureBachground(currentTemp, alarmLow, alarmHigh)} rounded-lg shadow-lg p-6 cursor-pointer transform transition-transform hover:scale-105 w-[300px] h-[350px]`}
       role="button"
       tabIndex={0}
       aria-label={`Temperature monitor for ${name}`}
@@ -59,7 +79,7 @@ const TemperatureMonitorCard = ({
             aria-valuemax={100}
           >
             <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-sm z-10">
-              {currentTemp}°C
+              {deviceIsOff ===true ? "Device is off" : `${currentTemp}°C`}
             </div>
           </div>
 
@@ -96,7 +116,7 @@ const TemperatureMonitorCard = ({
 
       </div>
 
-      <div className="mt-4">
+      {!deviceIsOff && (<div className="mt-4">
       <div className="flex-1">
           <div className="space-y-2">
             {currentTemp >= alarmHigh && (
@@ -114,7 +134,7 @@ const TemperatureMonitorCard = ({
           </div>
         </div>        
 
-      </div>
+      </div>)}
     </div>
   );
 };
