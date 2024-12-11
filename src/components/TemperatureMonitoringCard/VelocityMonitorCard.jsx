@@ -27,7 +27,7 @@ const VelocityMonitorCard = ({
       aria-label={`Velocity monitor for ${name}`}
     >
       <div className="flex justify-between items-start mb-4">
-        <h3 className="text-xl font-semibold text-gray-800">{name}</h3>
+        <h3 className="text-base font-semibold text-gray-800">{name}</h3>
         <button
           onClick={(e) => onSettingsClick(e, { id, name, currentVel})}
           className="p-2 hover:bg-gray-100 rounded-full"

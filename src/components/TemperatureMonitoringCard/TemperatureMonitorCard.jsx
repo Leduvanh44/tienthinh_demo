@@ -61,7 +61,7 @@ const TemperatureMonitorCard = ({
       aria-label={`Temperature monitor for ${name}`}
     >
       <div className="flex justify-between items-start mb-4">
-        <h3 className="text-xl font-semibold text-gray-800">{name}</h3>
+        <h3 className="text-báe font-semibold text-gray-800">{name}</h3>
         <button
           onClick={(e) => onSettingsClick(e, { id, name, currentTemp, setPoint, alarmLow, alarmHigh })}
           className="p-2 hover:bg-gray-100 rounded-full"
