@@ -238,14 +238,14 @@ console.log(temperatureData);
       <Sidebar />
     </aside>
 
-    <div className="p-10 overflow-auto flex-1">
+    <div className="p-5 overflow-auto flex-1">
     <h1 className="font-roboto text-2xl font-semibold mb-6">
         Thông số các thiết bị trong tủ {data.name}
     </h1>
     <div
-      className="grid gap-20"
+      className="grid gap-10"
       style={{
-        gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+        gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
       }}
     >
       {temperatureData.map((card) => (

@@ -21,7 +21,7 @@ const VelocityMonitorCard = ({
   return (
     <div
       key={id}
-      className="bg-white rounded-lg shadow-lg p-6 cursor-pointer transform transition-transform hover:scale-105 w-[300px] h-[350px]"
+      className="bg-white rounded-lg shadow-lg p-6 cursor-pointer transform transition-transform hover:scale-105 w-[200px] h-[350px]"
       role="button"
       tabIndex={0}
       aria-label={`Velocity monitor for ${name}`}

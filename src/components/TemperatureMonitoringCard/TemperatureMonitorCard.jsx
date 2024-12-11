@@ -14,10 +14,18 @@ const TemperatureMonitorCard = ({
 
   const [deviceIsOff, setDeviceIsOff] = useState(false);
 
+  console.log(alarmHigh, alarmLow)
+
   useEffect(() => {
     if (
-      currentTemp === -1 &&
-      setPoint === -1
+      (currentTemp === -1 && setPoint === -1)
+    ) {
+      setDeviceIsOff(true);
+    } else {
+      setDeviceIsOff(false);
+    }
+    if (
+    (alarmLow === null && alarmHigh === null)
     ) {
       setDeviceIsOff(true);
     } else {
@@ -47,7 +55,7 @@ const TemperatureMonitorCard = ({
   return (
     <div
       key={id}
-      className={`${getTemperatureBachground(currentTemp, alarmLow, alarmHigh)} rounded-lg shadow-lg p-6 cursor-pointer transform transition-transform hover:scale-105 w-[300px] h-[350px]`}
+      className={`${getTemperatureBachground(currentTemp, alarmLow, alarmHigh)} rounded-lg shadow-lg p-2 cursor-pointer transform transition-transform hover:scale-105 w-[200px] h-[350px]`}
       role="button"
       tabIndex={0}
       aria-label={`Temperature monitor for ${name}`}
