@@ -184,6 +184,7 @@ const DetailData = () => {
     console.log("AlarmLowThresholdValueHC: ", AlarmLowThresholdValueHC)
     console.log("AlarmHighThresholdValueHC: ", AlarmHighThresholdValueHC)
 
+    
   const velocityData = presentValueFI.map((item, index) => {
       const correspondingDevice = data.dev.find(
           (device) => device.deviceId === `MD8/FanInverter/${index}`
@@ -195,7 +196,7 @@ const DetailData = () => {
       };
   });
 
-  const temperatureData = data.dev
+  let temperatureData = data.dev
   .filter((device) => device.deviceType.deviceTypeId === "HeatController") // Lọc thiết bị "HeatController"
   .map((device, index) => {
     const id = device.deviceId;

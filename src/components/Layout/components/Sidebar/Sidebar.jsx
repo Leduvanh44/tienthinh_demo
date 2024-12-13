@@ -58,7 +58,7 @@ function Sidebar() {
         onClick={() => handleClick("/Data")}
     >
         <img
-            src="/28.png"
+            src="/30.png"
             className="mx-auto aspect-square w-full cursor-pointer rounded-xl sm:w-1/2 px-2 py-2"
         ></img>
                 {/* <img

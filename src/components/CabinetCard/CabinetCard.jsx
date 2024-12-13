@@ -10,16 +10,16 @@ const CabinetCard = ({ id, name, status, errors, isError, handleClickDetail, hei
     // }
     switch (status) {
       case "operating":
-        return "bg-green-500"; 
+        return "#64ac6c"; 
       case "stopped":
-        return "bg-gray-500"; 
+        return "#a7a7a7"; 
       default:
-        return "bg-gray-500";
+        return "#a7a7a7";
     }
   };
   const getCardColor = (isError) => {
     if (isError && (status === "operating")) {
-      return "bg-red-100"; 
+      return "#eb1900"; 
     }
   };
 
@@ -43,8 +43,9 @@ const CabinetCard = ({ id, name, status, errors, isError, handleClickDetail, hei
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
             <div
-              className={`${getStatusColor(status, isError)} p-2 rounded-lg flex items-center justify-center`}
+              className={`p-2 rounded-lg flex items-center justify-center`}
               aria-label={`Status: ${status}`}
+              style={{ backgroundColor: `${getStatusColor(status, isError)}` }}
             >
               {getStatusIcon(status, isError)}
             </div>
@@ -62,7 +63,7 @@ const CabinetCard = ({ id, name, status, errors, isError, handleClickDetail, hei
           </p>
         </div> */}
       </div>
-      <div className={`h-1 w-full ${getStatusColor(status, isError)}`} role="presentation"></div>
+      <div className={`h-1 w-full`} role="presentation" style={{ backgroundColor: `${getStatusColor(status, isError)}` }}></div>
     </Card>
   );
 };
