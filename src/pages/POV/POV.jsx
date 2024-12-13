@@ -169,9 +169,15 @@ const POV = () => {
     }
   ];
 
-  const isDayEndAfterDayStart= (dayStart, dayEnd) => {
-    const startDate = new Date(dayStart);
-    const endDate = new Date(dayEnd);  
+  const isDayEndAfterDayStart = (dayStart, dayEnd) => {
+    const convertToISO = (dateStr) => {
+      const [month, day, rest] = dateStr.split("-");
+      return `${rest.split("T")[0]}-${month}-${day}T${rest.split("T")[1]}`;
+    };
+  
+    const startDate = new Date(convertToISO(dayStart));
+    const endDate = new Date(convertToISO(dayEnd));
+  
     return endDate > startDate;
   }
 
@@ -255,7 +261,8 @@ const POV = () => {
     //     toast.error(`Vui lòng nhập đầy đủ thông tin: ${missingFields.join(", ")}`);
     //     return;
     // }
-    if ((!isDayEndAfterDayStart(startTime, endTime)) || (!isDayEndAfterDayStart(StartAt, EndAt))) {
+    console.log(startTime, endTime, isDayEndAfterDayStart(startTime, endTime))
+    if ((!isDayEndAfterDayStart(startTime, endTime))) {
       toast.error("Thời gian bắt đầu phải trước thời gian kết thúc");
       return;
     }
@@ -367,7 +374,7 @@ const POV = () => {
   };
 
   const handleSearchReportdata = async (CabinetId, WorkOrder, Customer, Enamel, Size, StartAt, EndAt) => {
-    if ((!isDayEndAfterDayStart(StartTime, EndTime)) || (!isDayEndAfterDayStart(StartAt, EndAt))) {
+    if ((!isDayEndAfterDayStart(StartAt, EndAt))) {
       toast.error("Thời gian bắt đầu phải trước thời gian kết thúc");
       return;
     }
@@ -397,10 +404,10 @@ const POV = () => {
   // console.log(customer)
   // console.log(size)
   // console.log(enamel)
-  // console.log(dayStart)
-  // console.log(dayEnd)
-  // console.log(dayWOStart)
-  // console.log(dayWOEnd)
+  console.log(dayStart)
+  console.log(dayEnd)
+  console.log(dayWOStart)
+  console.log(dayWOEnd)
 
   return (
   <div className="flex h-screen overflow-hidden w-full">
