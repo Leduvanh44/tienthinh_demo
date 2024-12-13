@@ -8,6 +8,9 @@ const CabinetsApi = {
         createCabinet: async (data) => await axiosClient.post("/Cabinets", data),
         getExport: async (CabinetId, WorkOrder, Customer, Enamel, Size, StartTime, EndTime) => await axiosClient.get(`/Cabinets/Export?CabinetId=${CabinetId}&WorkOrder=${WorkOrder}&Customer=${Customer}&Enamel=${Enamel}&Size=${Size}&StartTime=${StartTime}&EndTime=${EndTime}`),
     },
+    Report: {
+        createReportInfo: async (data) => await axiosClient.post("/Reports", data),
+    }
 
 }
 export default CabinetsApi

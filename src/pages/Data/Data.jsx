@@ -7,6 +7,8 @@ import hubConnection from "@/services/signalr/productionProgress/hubConnection"
 import { CabinetsApi } from "../../services/api"
 import { useCallApi } from "@/hooks"
 import Loading from "../../components/Layout/components/Loading/Loading";
+import { FaCheck, FaTimes, FaExclamationTriangle } from "react-icons/fa";
+import Card from "@/components/Card";
 
 const Data = () => {
   const [cabinetFake] = useState([
@@ -232,6 +234,33 @@ const Data = () => {
           ))} */}
         </div>
       </main>
+
+      <div className="absolute bottom-10 right-10">
+        <Card className="p-4">
+          {/* Icon đầu: Operate */}
+          <div className="flex items-center mb-4">
+            <div
+              className="p-2 flex items-center justify-center rounded-lg w-[40px] h-[40px] mr-4"
+              style={{ backgroundColor: `#64ac6c` }}
+            >
+              <FaCheck className="text-white" />
+            </div>
+            <span className="text-gray-700 text-sm font-medium">Operating</span>
+          </div>
+
+          {/* Icon dưới: Close */}
+          <div className="flex items-center">
+            <div
+              className="p-2 flex items-center justify-center rounded-lg w-[40px] h-[40px] mr-4"
+              style={{ backgroundColor: `#a7a7a7` }}
+            >
+              <FaTimes className="text-white" />
+            </div>
+            <span className="text-gray-700 text-sm font-medium">Closed</span>
+          </div>
+        </Card>
+      </div>
+
       {loading && <Loading />}
     </div>
   );

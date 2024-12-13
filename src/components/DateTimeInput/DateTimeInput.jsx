@@ -40,21 +40,21 @@ function DateTimeInput({ id, label, value, setValue, className, type, timeCompar
             return hours * 3600 + minutes * 60 + seconds
         }
         if (type === "timeStart") {
-            if (timeToSeconds(inputDateTime.split("T")[1]) < timeToSeconds(timeCompare.split("T")[1])) {
+            // if (timeToSeconds(inputDateTime.split("T")[1]) < timeToSeconds(timeCompare.split("T")[1])) {
                 setValue(formatToVietnamTime(inputDateTime))
-            } 
-            else {
-                toast.error("Thời gian bắt đầu phải trước thời gian kết thúc")
-            }
+            // } 
+            // else {
+            //     toast.error("Thời gian bắt đầu phải trước thời gian kết thúc")
+            // }
         } else {
-            if (timeToSeconds(inputDateTime.split("T")[1]) > timeToSeconds(timeCompare.split("T")[1])) {
+            // if (timeToSeconds(inputDateTime.split("T")[1]) > timeToSeconds(timeCompare.split("T")[1])) {
                 setValue(formatToVietnamTime(inputDateTime))
-            }
-            else {
-                toast.error("Thời gian kết thúc phải sau thời gian bắt đầu")
-            }
+            // }
+            // else {
+            //     toast.error("Thời gian kết thúc phải sau thời gian bắt đầu")
+            // }
         }
-    }, [inputDateTime])
+    }, [inputDateTime, timeCompare])
 
     return (
         <>

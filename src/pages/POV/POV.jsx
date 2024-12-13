@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback} from 'react';
 import Sidebar from '../../components/Layout/components/Sidebar'
 import { FaThermometerHalf, FaFan, FaExclamationTriangle } from "react-icons/fa";
 import Card from "@/components/Card"
+import TableCustom from "@/components/TableCustom"
 import { useNavigate } from "react-router-dom"
 import DateTimeInput from "@/components/DateTimeInput"
 import TextInput from "@/components/TextInput"
@@ -32,7 +33,9 @@ const POV = () => {
   const [deviceNames, setDeviceNames] = useState([]);
   const [reportData, setReportData] = useState([]);
   const [showGraphs, setShowGraphs] = useState(false);
-  const [error, setError] = useState("");
+  const [searchReportList, setsearchReportList] = useState([]);
+  const [showDownloads, setShowDownloads] = useState(false);
+
 
   const getDeviceList = useCallback(() => {
     callApi(
@@ -166,6 +169,47 @@ const POV = () => {
     }
   ];
 
+  const isDayEndAfterDayStart= (dayStart, dayEnd) => {
+    const startDate = new Date(dayStart);
+    const endDate = new Date(dayEnd);  
+    return endDate > startDate;
+  }
+
+  const handleDownload = async (row) => {
+    console.log("Downloading item:", row);
+    setLoading(true);
+    try {
+        const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Cabinets/Export?CabinetId=${cabinetId[0]}&WorkOrder=${row.workOrder}&Customer=${row.customer}&Enamel=${row.enamel}&Size=${row.size}&StartTime=${row.startAt.replace("T", " ")}&EndTime=${row.startAt.replace("T", " ")}&StartAt=${row.startAt.replace("T", " ")}&EndAt=${row.startAt.replace("T", " ")}`;
+        console.log(url);
+        const getResponse = await fetch(url, { method: "GET" });
+        if (getResponse.ok) {
+            const blob = await getResponse.blob();
+            const downloadUrl = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = downloadUrl;
+            a.download = "TienThinh-old-report.xlsx";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            toast.success("Xuất tệp Excel thành công!");
+        } else {
+            throw new Error("Không thể xuất tệp Excel, vui lòng thử lại.");
+        }
+    } catch (error) {
+        toast.error(error.message);
+    } finally {
+        setLoading(false);
+    }
+    setLoading(false)
+  };
+
+  const formatDate = (inputDate) => {
+    const [date, time] = inputDate.split("T");
+    const [month, day , year] = date.split("-");
+    const formattedDate = `${year}-${month}-${day}T${time}`;
+    return formattedDate;
+  };
+
   const convertData = (inputArray) => {
     const normalizedData = inputArray.map(item => ({
         ...item,
@@ -211,6 +255,10 @@ const POV = () => {
     //     toast.error(`Vui lòng nhập đầy đủ thông tin: ${missingFields.join(", ")}`);
     //     return;
     // }
+    if ((!isDayEndAfterDayStart(startTime, endTime)) || (!isDayEndAfterDayStart(StartAt, EndAt))) {
+      toast.error("Thời gian bắt đầu phải trước thời gian kết thúc");
+      return;
+    }
     setLoading(true);
     if (!Array.isArray(devices)) {
       console.log("error array")
@@ -248,6 +296,12 @@ const POV = () => {
     if (!EndTime) missingFields.push("Ngày kết thúc lệnh");
     if (!StartAt) missingFields.push("Bắt đầu");
     if (!EndAt) missingFields.push("Kết thúc");
+
+    if ((!isDayEndAfterDayStart(StartTime, EndTime)) || (!isDayEndAfterDayStart(StartAt, EndAt))) {
+      toast.error("Thời gian bắt đầu phải trước thời gian kết thúc");
+      return;
+    }
+
     if (missingFields.length > 0) {
         toast.error(`Vui lòng nhập đầy đủ thông tin: ${missingFields.join(", ")}`);
         return;
@@ -258,35 +312,39 @@ const POV = () => {
         return;
     }
 
+
+
     setLoading(true);
-    
-    const postData = {
-        workOrder: WorkOrder,
-        customer: Customer,
-        enamel: Enamel,
-        size: parseFloat(Size),
-        startAt: StartAt.replace("T", " "),
-        endAt: EndAt.replace("T", " "),
-    };
-    console.log(postData)
     try {
-        const postResponse = await fetch(import.meta.env.VITE_SERVER_ADDRESS + "/api/Report", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(postData),
+        const postData = {
+          cabinetId: CabinetId[0],
+          workOrder: WorkOrder,
+          customer: Customer,
+          enamel: Enamel,
+          size: parseFloat(Size),
+          startAt: formatDate(StartAt),
+          endAt: formatDate(EndAt),
+        };
+        console.log(JSON.stringify(postData));
+        let callApiFunction;
+        callApiFunction = CabinetsApi.Report.createReportInfo(JSON.stringify(postData))
+        callApiFunction
+        .then((result) => {
+          console.log("Value:", result.statusCode);
+          if (result.value !== true) {
+            throw new Error(`Failed to post || status: ${result.statusCode}`);
+          }
+          else {
+            toast.success(`Post sucessfully || status: ${result.statusCode}`);
+          }
+        })
+        .catch((error) => {
+          throw new Error("Failed to post: ", error);
         });
 
-        if (!postResponse.ok) {
-            throw new Error("Không thể tạo báo cáo, vui lòng thử lại.");
-        }
-
-        const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Report?CabinetId=${CabinetId}&WorkOrder=${WorkOrder}&Customer=${Customer}&Enamel=${Enamel}&Size=${Size}&StartTime=${StartTime}&EndTime=${EndTime}&StartAt=${StartAt}&EndAt=${EndAt}`;
+        const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Cabinets/Export?CabinetId=${CabinetId}&WorkOrder=${WorkOrder}&Customer=${Customer}&Enamel=${Enamel}&Size=${Size}&StartTime=${StartTime.replace("T", " ")}&EndTime=${EndTime.replace("T", " ")}&StartAt=${StartAt.replace("T", " ")}&EndAt=${EndAt.replace("T", " ")}`;
         console.log(url);
-
         const getResponse = await fetch(url, { method: "GET" });
-
         if (getResponse.ok) {
             const blob = await getResponse.blob();
             const downloadUrl = URL.createObjectURL(blob);
@@ -305,6 +363,32 @@ const POV = () => {
     } finally {
         setLoading(false);
     }
+    setLoading(false)
+  };
+
+  const handleSearchReportdata = async (CabinetId, WorkOrder, Customer, Enamel, Size, StartAt, EndAt) => {
+    if ((!isDayEndAfterDayStart(StartTime, EndTime)) || (!isDayEndAfterDayStart(StartAt, EndAt))) {
+      toast.error("Thời gian bắt đầu phải trước thời gian kết thúc");
+      return;
+    }
+    setLoading(true); 
+    try {
+      const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Reports?WorkOrder=${WorkOrder}&Enamel=${Enamel}&Customer=${Customer}&Size=${Size}&StartAt=${StartAt.replace("T", " ")}&EndAt=${EndAt.replace("T", " ")}&CabinetId=${CabinetId[0]===undefined ? "" : CabinetId[0]}`;
+      console.log("Fetching data from URL:", url); 
+      const response = await fetch(url, { method: "GET" });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch data: ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log("Data received:", data);
+      setsearchReportList(data);
+      setShowDownloads(true);
+    } catch (error) {
+      console.error("Error fetching report data:", error);
+      toast.error(`Error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
 
@@ -313,8 +397,11 @@ const POV = () => {
   // console.log(customer)
   // console.log(size)
   // console.log(enamel)
-  console.log(devices)
-  console.log(reportData)
+  // console.log(dayStart)
+  // console.log(dayEnd)
+  // console.log(dayWOStart)
+  // console.log(dayWOEnd)
+
   return (
   <div className="flex h-screen overflow-hidden w-full">
     <aside>
@@ -325,14 +412,14 @@ const POV = () => {
             Report
         </h1>
         <div className='py-3 gap-5 w-full'>
-        <ToggleButtons active={pageIndex} onClick={setPageIndex} titles={["Export Excel", "Report View"]} />
+        <ToggleButtons active={pageIndex} onClick={setPageIndex} titles={["Export Excel", "Report View", "Search Old Report"]} />
         </div>
 
         <div className="flex w-full gap-5">
         <Card className="relative grow cursor-pointer p-1" >
           <div className="w-[50%]">
             <SelectInput
-                label={`Chọn mã tủ*`}
+                label={pageIndex === 0 ? `Chọn mã tủ*` : `Chọn mã tủ`}
                 list={[
                   { value: "MD08", key: "MD08" },
                 ]}
@@ -341,9 +428,9 @@ const POV = () => {
             />
           </div>
 
-        <div className="flex p-1 gap-1">
+        {pageIndex === 0 && <div className="flex p-1 gap-1">
         <DateTimeInput
-            label="Từ ngày"
+            label="Ngày bắt đầu"
             value={dayStart}
             setValue={setDayStart}
             timeCompare={dayEnd}
@@ -351,18 +438,18 @@ const POV = () => {
             className="flex-1 mb-4"
         />
         <DateTimeInput
-            label="đến ngày"
+            label="Ngày kết thúc"
             value={dayEnd}
             setValue={setDayEnd}
             timeCompare={dayStart}
             type="timeEnd"
             className="flex-1 mb-4"
         />
-        </div>
+        </div>}
 
         <div className="flex p-1 gap-1">
         <DateTimeInput
-            label="Ngày bắt đầu"
+            label="Từ ngày"
             value={dayWOStart}
             setValue={setDayWOStart}
             timeCompare={dayWOEnd}
@@ -370,7 +457,7 @@ const POV = () => {
             className="flex-1 mb-4"
         />
         <DateTimeInput
-            label="Ngày kết thúc"
+            label="đến ngày "
             value={dayWOEnd}
             setValue={setDayWOEnd}
             timeCompare={dayWOStart}
@@ -379,34 +466,34 @@ const POV = () => {
         />
         </div>
 
-        {pageIndex ===0 && <div className="flex p-1 gap-1">
+        {(pageIndex ===0 || pageIndex ===2) && <div className="flex p-1 gap-1">
         <TextInput
             className="flex-1 h-[64px]"
-            label="Lệnh sản xuất *"
+            label={pageIndex === 0 ? "Lệnh sản xuất*" : "Lệnh sản xuất"}
             value={workOrder}
             setValue={setWorkOrder}
             placeholder="(...1024)"
         />
         <TextInput
             className="flex-1 h-[64px]"
-            label="Khách hàng *"
+            label={pageIndex === 0 ? "Khách hàng*" : "Khách hàng"}
             value={customer}
             setValue={setCustomer}
             placeholder="(...ABC)"
         />
         </div>}
 
-        {pageIndex ===0 && <div className="flex p-1 gap-1">
+        {(pageIndex ===0 || pageIndex ===2) && <div className="flex p-1 gap-1">
         <TextInput
             className="flex-1 h-[64px]"
-            label="Kích thước dây *"
+            label={pageIndex === 0 ? "Kích thước dây*" : "Kích thước dây"}
             value={size}
             setValue={setSize}
             placeholder="(...22)"
         />
         <TextInput
             className="flex-1 h-[64px]"
-            label="Loại men *"
+            label={pageIndex === 0 ? "Loại men*" : "Loại men"}
             value={enamel}
             setValue={setEnamel}
             placeholder="(...ABC)"
@@ -421,55 +508,68 @@ const POV = () => {
         </div>}
 
 
-
-
         {pageIndex ===1 && <div className="absolute bottom-4 right-8 flex gap-2">
-        <Button onClick={() =>handleReportdata(dayStart, dayEnd, devices)}>
+        <Button onClick={() =>handleReportdata(dayWOStart, dayWOEnd, devices)}>
           Report
         </Button>
         </div>}
 
         {pageIndex === 1 && showGraphs && (
-  <div className="flex flex-col items-center w-full gap-5 font-roboto py-10">
-    <Card className="w-[95%] ">
-      <>
-        <ReactApexChart
-          options={tempChart1Options}
-          series={tempChart1Series}
-          type="line"
-          height={400}
-        />
-      </>
-    </Card>
+          <div className="flex flex-col items-center w-full gap-5 font-roboto py-10">
+            <Card className="w-[95%] ">
+              <>
+                <ReactApexChart
+                  options={tempChart1Options}
+                  series={tempChart1Series}
+                  type="line"
+                  height={400}
+                />
+              </>
+            </Card>
 
-    <Card className="w-[95%] ">
-      <>
-        <ReactApexChart
-          options={tempChart2Options}
-          series={tempChart2Series}
-          type="line"
-          height={400}
-        />
-      </>
-    </Card>
+            <Card className="w-[95%] ">
+              <>
+                <ReactApexChart
+                  options={tempChart2Options}
+                  series={tempChart2Series}
+                  type="line"
+                  height={400}
+                />
+              </>
+            </Card>
 
-    <Card className="w-[95%] ">
-      <>
-        <ReactApexChart
-          options={fanChartOptions}
-          series={fanChartSeries}
-          type="line"
-          height={400}
-        />
-      </>
-    </Card>
-  </div>
-)}
+            <Card className="w-[95%] ">
+              <>
+                <ReactApexChart
+                  options={fanChartOptions}
+                  series={fanChartSeries}
+                  type="line"
+                  height={400}
+                />
+              </>
+            </Card>
+          </div>
+        )}
         {/* {pageIndex ===1 && showGraphs && (
           <div className="flex h-[calc(100%-370px)] w-full gap-5">
 
           </div>
         )} */}
+
+        {pageIndex ===2 && <div className="absolute bottom-4 right-8 flex gap-2">
+        <Button onClick={() =>handleSearchReportdata(cabinetId, workOrder, 
+          customer, enamel, size, dayWOStart, dayWOEnd)}>
+          Search
+        </Button>
+        </div>}
+
+        {pageIndex === 2 && showDownloads && (
+          <div className="flex flex-col items-center w-full gap-5 font-roboto py-10">
+              <>
+              <TableCustom data={searchReportList} handleDownload={handleDownload} />
+              </>
+          </div>
+        )}
 
       </div>
 
