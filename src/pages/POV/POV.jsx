@@ -185,7 +185,7 @@ const POV = () => {
     console.log("Downloading item:", row);
     setLoading(true);
     try {
-        const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Cabinets/Export?CabinetId=${cabinetId[0]}&WorkOrder=${row.workOrder}&Customer=${row.customer}&Enamel=${row.enamel}&Size=${row.size}&StartTime=${row.startAt.replace("T", " ")}&EndTime=${row.startAt.replace("T", " ")}&StartAt=${row.startAt.replace("T", " ")}&EndAt=${row.startAt.replace("T", " ")}`;
+        const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Cabinets/Export?CabinetId=${cabinetId[0]}&WorkOrder=${row.workOrder}&Customer=${row.customer}&Enamel=${row.enamel}&Size=${row.size}&StartTime=${row.startAt.replace("T", " ")}&EndTime=${row.endAt.replace("T", " ")}&StartAt=${row.startAt.replace("T", " ")}&EndAt=${row.endAt.replace("T", " ")}`;
         console.log(url);
         const getResponse = await fetch(url, { method: "GET" });
         if (getResponse.ok) {
