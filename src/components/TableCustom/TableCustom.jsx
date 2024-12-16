@@ -39,7 +39,7 @@ const TableCustom = ({ data, handleDownload }) => {
       <table className="min-w-full bg-white" role="table">
         <thead>
           <tr className="bg-primary-5 border-b border-gray-200">
-            {["Work Order", "Enamel", "Customer", "Size", "Start At", "End At", "Actions"].map((header, index) => (
+            {["Lệnh sản xuất", "Loại men", "Khách hàng", "Kích thước dây", "Bắt đầu", "kết thúc", "Báo cáo"].map((header, index) => (
               <th
                 key={index}
                 className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-950"

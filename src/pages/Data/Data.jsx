@@ -187,7 +187,7 @@ const Data = () => {
 
       <main className="flex-1 flex flex-col p-6 overflow-auto">
         <h1 className="font-roboto text-2xl font-semibold mb-6">
-        Cabinets
+        Danh sách tủ điện
         </h1>
         <div
           className="flex flex-wrap gap-10 justify-start"

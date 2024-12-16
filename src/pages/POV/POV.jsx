@@ -416,7 +416,7 @@ const POV = () => {
     </aside>
       <div className="flex-1 flex flex-col p-6 h-screen overflow-auto">
         <h1 className="font-roboto text-2xl font-semibold mb-6">
-            Report
+            Báo cáo
         </h1>
         <div className='py-3 gap-5 w-full'>
         <ToggleButtons active={pageIndex} onClick={setPageIndex} titles={["Export Excel", "Report View", "Search Old Report"]} />
