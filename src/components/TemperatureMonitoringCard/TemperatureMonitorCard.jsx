@@ -76,7 +76,7 @@ const TemperatureMonitorCard = ({
             aria-valuemin={alarmLow - 100}
             aria-valuemax={alarmHigh + 100}
           >
-            <div className={`absolute w-full bottom-2 left-1/2 transform -translate-x-1/2 text-center font-bold ${getTemperatureText(currentTemp, setPoint, alarmLow, alarmHigh)} px-2 py-1 text-base z-10`}>
+            <div className={`absolute w-full bottom-2 left-1/2 transform -translate-x-1/2 text-center font-bold ${getTemperatureText(currentTemp, deviceIsOff, alarmLow, alarmHigh)} px-2 py-1 text-base z-10`}>
               {deviceIsOff === true ? "Device is off" : `${currentTemp}°C`}
             </div>
           </div>
@@ -85,7 +85,7 @@ const TemperatureMonitorCard = ({
           <div
             className="absolute w-full border-t-2 border-dashed border-green-600"
             style={{
-              bottom: `${calculateHeight(setPoint, setPoint, alarmLow, alarmHigh)}%`,
+              bottom: `${calculateHeight(setPoint, deviceIsOff, alarmLow, alarmHigh)}%`,
             }}
           >
             <span className="absolute -left-12 -top-2 text-sm text-green-600">
@@ -109,7 +109,7 @@ const TemperatureMonitorCard = ({
     <div
       className="absolute w-full border-t-2 border-dashed border-red-500"
       style={{
-        bottom: `${calculateHeight(alarmLow, setPoint, alarmLow, alarmHigh)}%`,
+        bottom: `${calculateHeight(alarmLow, deviceIsOff, alarmLow, alarmHigh)}%`,
       }}
     >
       <span className="absolute -left-12 -top-2 text-sm text-red-500">
