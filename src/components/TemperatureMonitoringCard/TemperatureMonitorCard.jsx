@@ -30,7 +30,7 @@ const TemperatureMonitorCard = ({
     return "bg-green-300";
   };
 
-  const getTemperatureBachground = (temp, alarmLow, alarmHigh) => {
+  const getTemperatureBachground = (temp, device, alarmLow, alarmHigh) => {
     if (temp >= alarmHigh || temp <= alarmLow || device === true) return "bg-red-100";
     return "bg-white";
   };
@@ -50,7 +50,7 @@ const TemperatureMonitorCard = ({
   return (
     <div
       key={id}
-      className={`${getTemperatureBachground(currentTemp, alarmLow, alarmHigh)} rounded-lg shadow-lg p-2 cursor-pointer transform transition-transform hover:scale-105 w-[200px] h-[330px]`}
+      className={`${getTemperatureBachground(currentTemp, deviceIsOff, alarmLow, alarmHigh)} rounded-lg shadow-lg p-2 cursor-pointer transform transition-transform hover:scale-105 w-[200px] h-[330px]`}
       role="button"
       tabIndex={0}
       aria-label={`Temperature monitor for ${name}`}
