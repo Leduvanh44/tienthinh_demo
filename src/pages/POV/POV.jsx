@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback} from 'react';
+import React, { useEffect, useState, useCallback, useRef} from 'react';
 import Sidebar from '../../components/Layout/components/Sidebar'
 import { FaThermometerHalf, FaFan, FaExclamationTriangle } from "react-icons/fa";
 import Card from "@/components/Card"
@@ -17,10 +17,10 @@ import { FiAlertCircle } from "react-icons/fi";
 import ToggleButtons from "@/components/ToggleButtons"
 
 const POV = () => {
-  const [dayStart, setDayStart] = useState("11-11-2024T04:31:56")
-  const [dayEnd, setDayEnd] = useState("12-12-2024T04:31:56")
-  const [dayWOStart, setDayWOStart] = useState("11-11-2024T04:31:56")
-  const [dayWOEnd, setDayWOEnd] = useState("12-12-2024T04:31:56")
+  const [dayStart, setDayStart] = useState("12-11-2024T10:00:00")
+  const [dayEnd, setDayEnd] = useState("12-11-2024T11:00:00")
+  const [dayWOStart, setDayWOStart] = useState("12-16-2024T10:00:00")
+  const [dayWOEnd, setDayWOEnd] = useState("12-17-2024T11:00:00")
   const [workOrder, setWorkOrder] = useState("")
   const [customer, setCustomer] = useState("")
   const [size, setSize] = useState()
@@ -35,6 +35,9 @@ const POV = () => {
   const [showGraphs, setShowGraphs] = useState(false);
   const [searchReportList, setsearchReportList] = useState([]);
   const [showDownloads, setShowDownloads] = useState(false);
+  const chartTemp1Ref = useRef(null);
+  const chartTemp2Ref = useRef(null);
+  const chartFanRef = useRef(null);
 
 
   const getDeviceList = useCallback(() => {
@@ -54,13 +57,16 @@ const POV = () => {
     chart: {
       type: "line",
       toolbar: {
-        show: true
+        show: true, 
+        tools: {
+          download: false 
+        }
       },
       zoom: {
         enabled: true
       }
     },
-    colors: ["#FF4560", "#00E396", "#008FFB"],
+    colors: ["#FF4560", "#00E396", "#008FFB"],  
     dataLabels: {
       enabled: false
     },
@@ -69,8 +75,14 @@ const POV = () => {
       width: 2
     },
     title: {
-      text: "Temperature Chart (3 Sensors)",
-      align: "left"
+      text: `Nhiệt độ đạt được của 3 thiết bị tủ ${cabinetId[0]}: Từ ${dayWOStart} đến ${dayWOEnd}`,
+      align: "left",
+      style: {
+        fontSize: '16px', 
+        fontWeight: 'bold', 
+        fontFamily: 'Roboto', 
+        color: '#333' 
+      }
     },
     grid: {
       borderColor: "#e7e7e7",
@@ -94,24 +106,70 @@ const POV = () => {
       position: "top"
     },
     tooltip: {
-      enabled: true
-    }
+      enabled: true,
+      custom: function({ series, seriesIndex, dataPointIndex, w }) {
+        // Lấy dữ liệu từ tất cả các series và tạo một mảng để sắp xếp
+        let tooltipContent = "<div style='padding: 10px;'>";
+  
+        // Tạo một mảng để chứa dữ liệu của các series
+        let seriesData = w.config.series.map((seriesItem, index) => {
+          return {
+            name: seriesItem.name,
+            value: series[index][dataPointIndex],
+            color: w.config.colors[index]
+          };
+        });
+  
+        // Sắp xếp mảng theo giá trị từ lớn đến nhỏ
+        seriesData.sort((a, b) => b.value - a.value);
+  
+        // Hiển thị các giá trị đã sắp xếp
+        seriesData.forEach(item => {
+          tooltipContent += `
+            <div>
+              <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${item.color}; margin-right: 8px;"></span>
+              <strong>${item.name}:</strong> ${item.value.toFixed(2)} °C
+            </div>
+          `;
+        });
+  
+        tooltipContent += "</div>";
+        return tooltipContent;
+      }
+    },
+    // toolbar: {
+    //   export: {
+    //     png: `${cabinetId[0]}-${dayWOStart}${dayWOEnd}.png`
+    //   }
+    // }
   };
-
+  
   const tempChart2Options = {
     ...tempChart1Options,
     colors: ["#FF4560", "#00E396", "#008FFB", "#775DD0"],
     title: {
-      text: "Temperature Chart (4 Sensors)",
-      align: "left"
-    }
+      text: `Nhiệt độ đạt được của 4 thiết bị tủ ${cabinetId[0]}: Từ ${dayWOStart} đến ${dayWOEnd}`,
+      align: "left",
+      style: {
+        fontSize: '16px', 
+        fontWeight: 'bold', 
+        fontFamily: 'Roboto', 
+        color: '#333' 
+      }
+    },
   };
 
   const fanChartOptions = {
     ...tempChart1Options,
     title: {
-      text: "Fan Speed Chart",
-      align: "left"
+      text: `Tốc độ quạt đạt được của 4 thiết bị tủ ${cabinetId[0]}: Từ ${dayWOStart} đến ${dayWOEnd}`,
+      align: "left",
+      style: {
+        fontSize: '16px', 
+        fontWeight: 'bold', 
+        fontFamily: 'Roboto', 
+        color: '#333' 
+      }
     },
     yaxis: {
       title: {
@@ -374,10 +432,10 @@ const POV = () => {
   };
 
   const handleSearchReportdata = async (CabinetId, WorkOrder, Customer, Enamel, Size, StartAt, EndAt) => {
-    if ((!isDayEndAfterDayStart(StartAt, EndAt))) {
-      toast.error("Thời gian bắt đầu phải trước thời gian kết thúc");
-      return;
-    }
+    // if ((!isDayEndAfterDayStart(StartAt, EndAt))) {
+    //   toast.error("Thời gian bắt đầu phải trước thời gian kết thúc");
+    //   return;
+    // }
     setLoading(true);
     try {
       const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Reports?WorkOrder=${WorkOrder}&Enamel=${Enamel}&Customer=${Customer}&Size=${Size}&StartTime=${StartAt === "NaN-NaN-NaNTNaN:NaN:NaN" ? "" : StartAt.replace("T", " ")}&EndTime=${EndAt === "NaN-NaN-NaNTNaN:NaN:NaN" ? "" :EndAt.replace("T", " ")}&CabinetId=${CabinetId[0]===undefined ? "" : CabinetId[0]}`;
@@ -398,6 +456,15 @@ const POV = () => {
     }
   };
 
+  const handleDownloadPNG = () => {
+    const chart = chartRef.current.chart;
+    chart.dataURI().then(({ imgURI }) => {
+      const a = document.createElement("a");
+      a.href = imgURI;
+      a.download = `${cabinetId[0]}-${dayWOStart}${dayWOEnd}.png`;
+      a.click();
+    });
+  };
 
   // console.log(cabinetId)
   // console.log(workOrder)
@@ -419,7 +486,7 @@ const POV = () => {
             Báo cáo
         </h1>
         <div className='py-3 gap-5 w-full'>
-        <ToggleButtons active={pageIndex} onClick={setPageIndex} titles={["Export Excel", "Report View", "Search Old Report"]} />
+        <ToggleButtons active={pageIndex} onClick={setPageIndex} titles={["Xuất báo cáo Excel", "Đồ thị báo cáo", "Tìm kiếm báo cáo Excel cũ"]} />
         </div>
 
         <div className="flex w-full gap-5">
@@ -454,7 +521,7 @@ const POV = () => {
         />
         </div>}
 
-        <div className="flex p-1 gap-1">
+        {pageIndex !== 0 && <div className="flex p-1 gap-1">
         <DateTimeInput
             label="Từ ngày"
             value={dayWOStart}
@@ -471,7 +538,7 @@ const POV = () => {
             type="timeEnd"
             className="flex-1 mb-4"
         />
-        </div>
+        </div>}
 
         {(pageIndex ===0 || pageIndex ===2) && <div className="flex p-1 gap-1">
         <TextInput
@@ -526,33 +593,51 @@ const POV = () => {
             <Card className="w-[95%] ">
               <>
                 <ReactApexChart
+                  ref={chartTemp1Ref}
                   options={tempChart1Options}
                   series={tempChart1Series}
                   type="line"
                   height={400}
                 />
+                <div className="flex justify-end">
+                <Button className="" onClick={() =>handleDownloadPNG()}>
+                  Tải PNG
+                </Button>  
+                </div>            
               </>
             </Card>
 
             <Card className="w-[95%] ">
               <>
                 <ReactApexChart
+                  ref={chartTemp2Ref}
                   options={tempChart2Options}
                   series={tempChart2Series}
                   type="line"
                   height={400}
                 />
+                <div className="flex justify-end">
+                <Button className="" onClick={() =>handleDownloadPNG()}>
+                  Tải PNG
+                </Button>  
+                </div>  
               </>
             </Card>
 
             <Card className="w-[95%] ">
               <>
                 <ReactApexChart
+                  ref={chartFanRef}
                   options={fanChartOptions}
                   series={fanChartSeries}
                   type="line"
                   height={400}
                 />
+                <div className="flex justify-end">
+                <Button className="" onClick={() =>handleDownloadPNG()}>
+                  Tải PNG
+                </Button>  
+                </div>
               </>
             </Card>
           </div>
