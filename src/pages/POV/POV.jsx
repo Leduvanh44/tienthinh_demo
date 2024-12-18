@@ -16,11 +16,31 @@ import ReactApexChart from "react-apexcharts";
 import { FiAlertCircle } from "react-icons/fi";
 import ToggleButtons from "@/components/ToggleButtons"
 
+const formatDate = (date, time) => {
+  const yyyy = date.getFullYear();
+  const MM = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${MM}-${dd}-${yyyy}T${time}`;
+};
+
+const now = new Date();
+const threeDaysAgo = new Date(now);
+threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+const startTime = "10:00:00";
+const endTime = "11:00:00";
+
+const initialDayStart = formatDate(threeDaysAgo, startTime); 
+const initialDayEnd = formatDate(now, endTime);              
+const initialDayWOStart = formatDate(threeDaysAgo, startTime); 
+const initialDayWOEnd = formatDate(now, endTime); 
 const POV = () => {
-  const [dayStart, setDayStart] = useState("12-11-2024T10:00:00")
-  const [dayEnd, setDayEnd] = useState("12-11-2024T11:00:00")
-  const [dayWOStart, setDayWOStart] = useState("12-16-2024T10:00:00")
-  const [dayWOEnd, setDayWOEnd] = useState("12-17-2024T11:00:00")
+  const [dayStart, setDayStart] = useState(initialDayStart);
+  const [dayEnd, setDayEnd] = useState(initialDayEnd);
+  const [dayWOStart, setDayWOStart] = useState(initialDayWOStart);
+  const [dayWOEnd, setDayWOEnd] = useState(initialDayWOEnd);
+
+
   const [workOrder, setWorkOrder] = useState("")
   const [customer, setCustomer] = useState("")
   const [size, setSize] = useState()
