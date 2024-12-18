@@ -476,7 +476,7 @@ const POV = () => {
     }
   };
 
-  const handleDownloadPNG = () => {
+  const handleDownloadPNG = (chartRef) => {
     const chart = chartRef.current.chart;
     chart.dataURI().then(({ imgURI }) => {
       const a = document.createElement("a");
@@ -620,7 +620,7 @@ const POV = () => {
                   height={400}
                 />
                 <div className="flex justify-end">
-                <Button className="" onClick={() =>handleDownloadPNG()}>
+                <Button className="" onClick={() =>handleDownloadPNG(chartTemp1Ref)}>
                   Tải PNG
                 </Button>  
                 </div>            
@@ -637,7 +637,7 @@ const POV = () => {
                   height={400}
                 />
                 <div className="flex justify-end">
-                <Button className="" onClick={() =>handleDownloadPNG()}>
+                <Button className="" onClick={() =>handleDownloadPNG(chartTemp2Ref)}>
                   Tải PNG
                 </Button>  
                 </div>  
@@ -654,7 +654,7 @@ const POV = () => {
                   height={400}
                 />
                 <div className="flex justify-end">
-                <Button className="" onClick={() =>handleDownloadPNG()}>
+                <Button className="" onClick={() =>handleDownloadPNG(chartFanRef)}>
                   Tải PNG
                 </Button>  
                 </div>
