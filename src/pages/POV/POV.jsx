@@ -458,7 +458,7 @@ const POV = () => {
     // }
     setLoading(true);
     try {
-      const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Reports?WorkOrder=${WorkOrder}&Enamel=${Enamel}&Customer=${Customer}&Size=${Size}&StartTime=${StartAt === "NaN-NaN-NaNTNaN:NaN:NaN" ? "" : StartAt.replace("T", " ")}&EndTime=${EndAt === "NaN-NaN-NaNTNaN:NaN:NaN" ? "" :EndAt.replace("T", " ")}&CabinetId=${CabinetId[0]===undefined ? "" : CabinetId[0]}`;
+      const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Reports?WorkOrder=${WorkOrder}&Enamel=${Enamel}&Customer=${Customer}&Size=${Size}&StartAt=${StartAt === "NaN-NaN-NaNTNaN:NaN:NaN" ? "" : StartAt.replace("T", " ")}&EndAt=${EndAt === "NaN-NaN-NaNTNaN:NaN:NaN" ? "" :EndAt.replace("T", " ")}&CabinetId=${CabinetId[0]===undefined ? "" : CabinetId[0]}`;
       console.log("Fetching data from URL:", url); 
       const response = await fetch(url, { method: "GET" });
       if (!response.ok) {
