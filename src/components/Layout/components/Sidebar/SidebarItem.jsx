@@ -10,8 +10,8 @@ function SidebarItem({ Icon, label, actived, isExpand, onClick }) {
             })}
             onClick={onClick}
         >
-            <div className="w-[46px] text-5xl">
-                <Icon />
+            <div className="w-[50px] text-5xl">
+                <Icon/>
             </div>
             <h2
                 className={cl("ml-3 transition-all duration-200", {

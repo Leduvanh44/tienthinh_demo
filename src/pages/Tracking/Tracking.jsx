@@ -3,6 +3,30 @@ import Sidebar from '../../components/Layout/components/Sidebar'
 import React, { useState } from 'react';
 import ErrorNotification from "@/components/ErrorNotification/ErrorNotification";
 import { FaTimes } from "react-icons/fa";
+import TableCustomErr from '../../components/TableCustom/TableCustomErr';
+import Button from "@/components/Button"
+import Card from "@/components/Card"
+import DateTimeInput from "@/components/DateTimeInput"
+import SelectInput from "@/components/SelectInput"
+import Loading from "../../components/Layout/components/Loading/Loading";
+import { toast } from "react-toastify";
+
+const formatDate = (date, time) => {
+  const yyyy = date.getFullYear();
+  const MM = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${MM}-${dd}-${yyyy}T${time}`;
+};
+
+const now = new Date();
+const threeDaysAgo = new Date(now);
+threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+const startTime = "10:00:00";
+const endTime = "11:00:00";
+
+const initialDayStart = formatDate(threeDaysAgo, startTime); 
+const initialDayEnd = formatDate(now, endTime);              
 
 const ErrorHistoryNotifications = () => {
   const [notifications, setNotifications] = useState([
@@ -40,6 +64,12 @@ const ErrorHistoryNotifications = () => {
   const [showResolutionPopup, setShowResolutionPopup] = useState(false);
   const [selectedErrorForResolution, setSelectedErrorForResolution] = useState(null);
   const [resolutionNote, setResolutionNote] = useState("");
+  const [dayStart, setDayStart] = useState(initialDayStart);
+  const [dayEnd, setDayEnd] = useState(initialDayEnd);
+  const [cabinetId, setCabinetId] = useState("")
+  const [searchErrHistory, setSearchErrHistory] = useState([]);
+  const [showDownloads, setShowDownloads] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const toggleExpand = (id) => {
     setNotifications(notifications.map(notif =>
@@ -81,6 +111,44 @@ const ErrorHistoryNotifications = () => {
     setSelectedError(null);
   };
 
+  const isDayEndAfterDayStart = (dayStart, dayEnd) => {
+    const convertToISO = (dateStr) => {
+      const [month, day, rest] = dateStr.split("-");
+      return `${rest.split("T")[0]}-${month}-${day}T${rest.split("T")[1]}`;
+    };
+  
+    const startDate = new Date(convertToISO(dayStart));
+    const endDate = new Date(convertToISO(dayEnd));
+  
+    return endDate > startDate;
+  }
+
+  const handleSearchErrHistory = async (CabinetId, StartAt, EndAt) => {
+    if ((!isDayEndAfterDayStart(StartAt, EndAt))) {
+      toast.error("Thời gian bắt đầu phải trước thời gian kết thúc");
+      return;
+    }
+    setLoading(true);
+    try {
+      const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Errors?StartTime=${StartAt === "NaN-NaN-NaNTNaN:NaN:NaN" ? "" : StartAt.replace("T", " ")}&EndTime=${EndAt === "NaN-NaN-NaNTNaN:NaN:NaN" ? "" :EndAt.replace("T", " ")}&CabinetId=${CabinetId[0]===undefined ? "" : CabinetId[0]}`;
+      console.log("Fetching data from URL:", url); 
+      const response = await fetch(url, { method: "GET" });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch data: ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log("Data received:", data);
+      setSearchErrHistory(data);
+      setShowDownloads(true);
+    } catch (error) {
+      console.error("Error fetching report data:", error);
+      toast.error(`Error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   return (
     <div className="container flex h-screen overflow-hidden">
       <aside>
@@ -88,9 +156,62 @@ const ErrorHistoryNotifications = () => {
       </aside>
 
     <div className="flex-1 flex flex-col p-6 overflow-auto">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Error History</h2>
+      <h1 className="font-roboto text-2xl font-semibold mb-6">Lịch sử lỗi</h1>
       
-      <div className="space-y-4" role="list" aria-label="Error notifications">
+      <div className="flex w-full gap-5">
+        <Card className="relative grow cursor-pointer p-1" >
+          <div className="w-[50%]">
+            <SelectInput
+                label={`Chọn mã tủ*`}
+                list={[
+                  { value: "MD08", key: "MD08" },
+                ]}
+                value={cabinetId}
+                setValue={setCabinetId}
+            />
+          </div>
+
+        <div className="flex p-1 gap-1">
+        <DateTimeInput
+            label="Ngày bắt đầu"
+            value={dayStart}
+            setValue={setDayStart}
+            timeCompare={dayEnd}
+            type="timeStart"
+            className="flex-1 mb-4"
+        />
+        <DateTimeInput
+            label="Ngày kết thúc"
+            value={dayEnd}
+            setValue={setDayEnd}
+            timeCompare={dayStart}
+            type="timeEnd"
+            className="flex-1 mb-4"
+        />
+        </div>
+
+        </Card> 
+      </div>
+      <div className="absolute bottom-4 right-8 flex gap-2">
+      <Button onClick={() =>handleSearchErrHistory(cabinetId, dayStart, dayEnd)}>
+          Tìm kiếm
+      </Button>
+      </div>
+
+      {showDownloads && (
+          <div className="flex flex-col items-center w-full gap-5 font-roboto py-10">
+
+            {/* <Card className="w-[95%] "> */}
+              <div className="flex flex-col items-center w-full gap-5 font-roboto py-10">
+                <>
+                <TableCustomErr data={searchErrHistory}/>
+                </>
+            </div>
+            {/* </Card>             */}
+          </div>
+      )}
+
+      {/* <div className="space-y-4" role="list" aria-label="Error notifications">
         {notifications.map((notification) => (
           <ErrorNotification
             key={notification.id}
@@ -100,7 +221,7 @@ const ErrorHistoryNotifications = () => {
             openPopup={openPopup}
           />
         ))}
-      </div>
+      </div> */}
 
       {showPopup && selectedError && (
         <div
@@ -181,6 +302,7 @@ const ErrorHistoryNotifications = () => {
         </div>
       )}
     </div>
+    {loading && <Loading />}
     </div>
   );
 };

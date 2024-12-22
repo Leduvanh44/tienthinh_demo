@@ -15,7 +15,6 @@ import Loading from "../../components/Layout/components/Loading/Loading";
 import ReactApexChart from "react-apexcharts";
 import { FiAlertCircle } from "react-icons/fi";
 import ToggleButtons from "@/components/ToggleButtons"
-
 const formatDate = (date, time) => {
   const yyyy = date.getFullYear();
   const MM = String(date.getMonth() + 1).padStart(2, "0");
@@ -39,8 +38,6 @@ const POV = () => {
   const [dayEnd, setDayEnd] = useState(initialDayEnd);
   const [dayWOStart, setDayWOStart] = useState(initialDayWOStart);
   const [dayWOEnd, setDayWOEnd] = useState(initialDayWOEnd);
-
-
   const [workOrder, setWorkOrder] = useState("")
   const [customer, setCustomer] = useState("")
   const [size, setSize] = useState()
@@ -59,6 +56,7 @@ const POV = () => {
   const chartTemp2Ref = useRef(null);
   const chartFanRef = useRef(null);
 
+  // const allData = reportData.map(d => d[devices[9]]);
 
   const getDeviceList = useCallback(() => {
     callApi(
@@ -118,6 +116,7 @@ const POV = () => {
       }
     },
     yaxis: {
+      min: 0,
       title: {
         text: "Temperature (°C)"
       }
@@ -490,11 +489,11 @@ const POV = () => {
   // console.log(workOrder)
   // console.log(customer)
   // console.log(size)
-  // console.log(enamel)
-  console.log(dayStart)
-  console.log(dayEnd)
-  console.log(dayWOStart)
-  console.log(dayWOEnd)
+  console.log(searchReportList)
+  // console.log(dayStart)
+  // console.log(dayEnd)
+  // console.log(dayWOStart)
+  // console.log(dayWOEnd)
 
   return (
   <div className="flex h-screen overflow-hidden w-full">
@@ -660,6 +659,7 @@ const POV = () => {
                 </div>
               </>
             </Card>
+           
           </div>
         )}
         {/* {pageIndex ===1 && showGraphs && (
