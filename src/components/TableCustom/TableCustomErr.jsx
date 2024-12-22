@@ -60,7 +60,7 @@ const TableCustomErr = ({ data }) => {
                 key={`${index}`}
                 className={`${index % 2 === 0 ? "bg-white" : "bg-red-100"} hover:bg-gray-100 transition-colors duration-200`}
               >
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.errorId}</td>
+                {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.errorId}</td> */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(row.timeStamp)}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.description}</td>
