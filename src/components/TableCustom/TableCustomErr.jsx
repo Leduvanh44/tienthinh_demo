@@ -43,7 +43,7 @@ const TableCustomErr = ({ data }) => {
       >
         <thead>
           <tr className="bg-primary-5 border-b border-t border-gray-200 hover:to-blue-900">
-            {["Id Lỗi", "Tên lỗi", "Thời gian lỗi", "Chi tiết lỗi", "Cập nhật lỗi", "Trạng thái"].map((header, index) => (
+            {["Tên lỗi", "Thời gian lỗi", "Chi tiết lỗi", "Cập nhật lỗi", "Trạng thái"].map((header, index) => (
               <th
                 key={index}
                 className="px-6 py-4 text-left text-sm font-roboto text-white uppercase tracking-wider"
