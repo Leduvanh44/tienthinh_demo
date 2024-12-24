@@ -14,7 +14,8 @@ import { toast } from "react-toastify";
 import Loading from "../../components/Layout/components/Loading/Loading";
 import ReactApexChart from "react-apexcharts";
 import ToggleButtons from "@/components/ToggleButtons"
-
+import './pov.less'
+import dayjs from 'dayjs';
 const formatDate = (date, time) => {
   const yyyy = date.getFullYear();
   const MM = String(date.getMonth() + 1).padStart(2, "0");
@@ -87,18 +88,21 @@ const POV = () => {
       getDeviceList()
   }, [getDeviceList])
 
-  const getTimestamps = (timestamps) => {
-    const first = timestamps[0];
-    const last = timestamps[timestamps.length - 1];
-    const middle = timestamps[Math.floor(timestamps.length / 2)];
+//   const getTimestamps = (timestamps) => {
+//     const first = timestamps[0];
+//     const last = timestamps[timestamps.length - 1];
+//     const middle = timestamps[Math.floor(timestamps.length / 2)];
 
-    return timestamps.map((timestamp, index) => {
-        if (timestamp === first || timestamp === middle || timestamp === last) {
-            return timestamp;
-        }
-        return ''; 
-    });
-};
+//     return timestamps.map((timestamp, index) => {
+//         if (timestamp === first || timestamp === middle || timestamp === last) {
+//             return timestamp;
+//         }
+//         return ''; 
+//     });
+// };
+
+const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
+
 
   const tempChart1Options = {
     chart: {
@@ -149,7 +153,7 @@ const POV = () => {
       }
     },
     xaxis: {
-      categories: reportData.map(d => d.timestamp),
+      categories: (reportData.map(d => d.timestamp)),
       // labels: {
       //     formatter: (value, index) => {
       //         const timestamps = reportData.map(d => d.timestamp);
@@ -414,6 +418,27 @@ const POV = () => {
     return formattedData;
   };
 
+  function convertToISOFormat(dateTime) {
+    // Kiểm tra nếu chuỗi đầu vào không hợp lệ
+    if (!dateTime || typeof dateTime !== "string") {
+      console.error("Dữ liệu đầu vào không hợp lệ:", dateTime);
+      return null;
+    }
+  
+    // Tách các thành phần từ định dạng MM-DD-YYYYTHH:mm:ss
+    const match = dateTime.match(/^(\d{2})-(\d{2})-(\d{4})T(\d{2}):(\d{2}):(\d{2})$/);
+    if (!match) {
+      console.error("Định dạng ngày giờ không hợp lệ:", dateTime);
+      return null;
+    }
+  
+    // Lấy các thành phần (tháng, ngày, năm, giờ, phút, giây)
+    const [, month, day, year, hour, minute, second] = match;
+  
+    // Trả về chuỗi định dạng ISO-8601
+    return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+  }
+
   const handleReportdata = async (startTime, endTime, devices) => {
     // const missingFields = [];
     // if (!startTime) missingFields.push("Bắt đầu");
@@ -446,15 +471,56 @@ const POV = () => {
       let combinedData = results.flat(); 
       combinedData = convertData(combinedData);
       const uniqueTimestamps = {};
-      const filtered = combinedData.filter(item => {
-        const minuteTimestamp = item.timestamp.slice(0, 16); // lấy timestamp đến phút
-        if (!uniqueTimestamps[minuteTimestamp]) {
+      let filtered = combinedData.filter(item => {
+        const minuteTimestamp = item.timestamp.slice(0, 16);
+        const minute = parseInt(item.timestamp.slice(14, 16), 10);
+        //minute % 5 === 0 &&
+        if (!uniqueTimestamps[minuteTimestamp]  ) {
           uniqueTimestamps[minuteTimestamp] = true;
           return true;
         }
         return false;
       });
-      setReportData(filtered);
+      const updateTimeStamp = filtered.map(item => ({
+        ...item,
+        timestamp: item.timestamp.slice(0, 16)
+      }));
+      console.log(updateTimeStamp)
+      const allTimestamps = [];
+      let current = dayjs(convertToISOFormat(startTime));
+      const end = dayjs(convertToISOFormat(endTime));
+      console.log("allTimestamps: ", current, end)
+
+      while (current.isBefore(end) || current.isSame(end)) {
+        allTimestamps.push(current.format("YYYY-MM-DDTHH:mm")); 
+        current = current.add(5, 'minute'); 
+      }
+      console.log("allTimestamps: ", allTimestamps)
+      const existingTimestamps = new Set(updateTimeStamp.map(item => item.timestamp));
+    
+      const missingData = allTimestamps
+        .filter(timestamp => !existingTimestamps.has(timestamp))
+        .map(timestamp => ({
+          timestamp,
+          "MD8/FanInverter/0": 0,
+          "MD8/FanInverter/1": 0,
+          "MD8/FanInverter/2": 0,
+          "MD8/FanInverter/3": 0,
+          "MD8/FanInverter/4": 0,
+          "MD8/HeatController/0": 0,
+          "MD8/HeatController/1": 0,
+          "MD8/HeatController/2": 0,
+          "MD8/HeatController/3": 0,
+          "MD8/HeatController/4": 0,
+          "MD8/HeatController/5": 0,
+          "MD8/HeatController/6": 0
+        }));
+    
+      const updatedReportData = [...updateTimeStamp, ...missingData].sort((a, b) =>
+        a.timestamp.localeCompare(b.timestamp)
+      );
+
+      setReportData(updatedReportData);
     } catch (error) {
         toast.error(`Error fetching data: ${error.message}`);
     } finally {
@@ -581,15 +647,15 @@ const POV = () => {
 
 
 
-  console.log(pageIndex && !isMobile)
+  // console.log(pageIndex && !isMobile)
   // console.log(workOrder)
   // console.log(customer)
   // console.log(size)
-  console.log(isMobile)
+  console.log(reportData.map(d => d.timestamp))
   // console.log(dayStart)
   // console.log(dayEnd)
-  // console.log(dayWOStart)
-  // console.log(dayWOEnd)
+  console.log(dayWOStart)
+  console.log(dayWOEnd)
 
   return (
   <div className="flex h-screen overflow-hidden w-full">
@@ -620,54 +686,54 @@ const POV = () => {
             />
           </div>
 
-        {pageIndex === 0 && (
-        <>
-        <div className="w-[90%]">
-        <DateTimeInput
+        {pageIndex === 0 && 
+          <div className="flex-container">
+          <div className="date-time-input">
+            <DateTimeInput
               label="Ngày bắt đầu"
               value={dayStart}
               setValue={setDayStart}
               timeCompare={dayEnd}
               type="timeStart"
               className="flex-1 mb-4"
-          />
-        </div>
-        <div className="w-[90%]">
-        <DateTimeInput
+            />
+          </div>
+          <div className="date-time-input">
+            <DateTimeInput
               label="Ngày kết thúc"
               value={dayEnd}
               setValue={setDayEnd}
               timeCompare={dayStart}
               type="timeEnd"
               className="flex-1 mb-4"
-          />
+            />
+          </div>
         </div>
-        </>)
         }
 
-        {pageIndex !== 0 && (
-        <>
-          <div className="w-[90%]">
-          <DateTimeInput
-            label="Từ ngày"
-            value={dayWOStart}
-            setValue={setDayWOStart}
-            timeCompare={dayWOEnd}
-            type="timeStart"
-            className="flex-1 mb-4"
-          />
+        {pageIndex !== 0 && 
+          <div className="flex-container">
+            <div className="date-time-input">
+              <DateTimeInput
+                label="Từ ngày"
+                value={dayWOStart}
+                setValue={setDayWOStart}
+                timeCompare={dayWOEnd}
+                type="timeStart"
+                className="flex-1 mb-4"
+              />
+            </div>
+            <div className="date-time-input">
+              <DateTimeInput
+                label="đến ngày "
+                value={dayWOEnd}
+                setValue={setDayWOEnd}
+                timeCompare={dayWOStart}
+                type="timeEnd"
+                className="flex-1 mb-4"
+              />
+            </div>
           </div>
-          <div className="w-[90%]">
-          <DateTimeInput
-            label="đến ngày "
-            value={dayWOEnd}
-            setValue={setDayWOEnd}
-            timeCompare={dayWOStart}
-            type="timeEnd"
-            className="flex-1 mb-4"
-          />
-          </div>
-        </>)
         }
 
         {(pageIndex ===0 || pageIndex ===2) && <div className="flex p-1 gap-1">

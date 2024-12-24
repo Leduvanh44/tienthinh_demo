@@ -10,7 +10,7 @@ import DateTimeInput from "@/components/DateTimeInput"
 import SelectInput from "@/components/SelectInput"
 import Loading from "../../components/Layout/components/Loading/Loading";
 import { toast } from "react-toastify";
-
+import './tracking.less'
 const formatDate = (date, time) => {
   const yyyy = date.getFullYear();
   const MM = String(date.getMonth() + 1).padStart(2, "0");
@@ -63,7 +63,7 @@ const ErrorHistoryNotifications = () => {
   useEffect(() => {
     // console.log(window.innerWidth, window.innerHeight)
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768 || window.innerHeight <= window.innerWidth);
+      setIsMobile(window.innerWidth <= 768);
     };
   
     handleResize(); 
@@ -185,28 +185,28 @@ const ErrorHistoryNotifications = () => {
             />
           </div>
 
-        <>
-        <div className="w-[90%]">
-        <DateTimeInput
-              label="Ngày bắt đầu"
-              value={dayStart}
-              setValue={setDayStart}
-              timeCompare={dayEnd}
-              type="timeStart"
-              className="flex-1 mb-4"
-          />
-        </div>
-        <div className="w-[90%]">
-        <DateTimeInput
-              label="Ngày kết thúc"
-              value={dayEnd}
-              setValue={setDayEnd}
-              timeCompare={dayStart}
-              type="timeEnd"
-              className="flex-1 mb-4"
-          />
-        </div>
-        </>
+          <div className="flex-container">
+            <div className="date-time-input">
+              <DateTimeInput
+                label="Ngày bắt đầu"
+                value={dayStart}
+                setValue={setDayStart}
+                timeCompare={dayEnd}
+                type="timeStart"
+                className="flex-1 mb-4"
+              />
+            </div>
+            <div className="date-time-input">
+              <DateTimeInput
+                label="Ngày kết thúc"
+                value={dayEnd}
+                setValue={setDayEnd}
+                timeCompare={dayStart}
+                type="timeEnd"
+                className="flex-1 mb-4"
+              />
+            </div>
+          </div>
 
         </Card> 
       </div>
