@@ -85,7 +85,7 @@ function DateTimeInput({ id, label, value, setValue, className, type, timeCompar
                 >
                     {label}
                 </label>
-                <div className="flex min-h-[58px] items-end pt-6">
+                <div className="flex min-h-[58px] items-end pt-2">
                     <div className="ml-2 flex w-fit min-w-[150px] max-w-[200px] flex-wrap"></div>
                     <input
                         type="datetime-local"

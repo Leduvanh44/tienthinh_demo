@@ -1,6 +1,6 @@
 import { AuthForm } from '../Auth'
 import Sidebar from '../../components/Layout/components/Sidebar'
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import ErrorNotification from "@/components/ErrorNotification/ErrorNotification";
 import { FaTimes } from "react-icons/fa";
 import TableCustomErr from '../../components/TableCustom/TableCustomErr';
@@ -58,7 +58,21 @@ const ErrorHistoryNotifications = () => {
       resolution: "Checked"
     }
   ]);
+  const [isMobile, setIsMobile] = useState(false);
 
+  useEffect(() => {
+    // console.log(window.innerWidth, window.innerHeight)
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768 || window.innerHeight <= window.innerWidth);
+    };
+  
+    handleResize(); 
+    window.addEventListener("resize", handleResize);
+  
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
   const [showPopup, setShowPopup] = useState(false);
   const [selectedError, setSelectedError] = useState(null);
   const [showResolutionPopup, setShowResolutionPopup] = useState(false);
@@ -151,16 +165,16 @@ const ErrorHistoryNotifications = () => {
 
   return (
     <div className="container flex h-screen overflow-hidden">
-      <aside>
+      <aside className='z-[9999]'>
         <Sidebar />
       </aside>
 
-    <div className="flex-1 flex flex-col p-6 overflow-auto">
+    <div className={`flex-1 flex flex-col ${isMobile ? 'p-2':'p-6'} overflow-auto`}>
       <h1 className="font-roboto text-2xl font-semibold mb-6">Lịch sử lỗi</h1>
       
-      <div className="flex w-full gap-5">
-        <Card className="relative grow cursor-pointer p-1" >
-          <div className="w-[50%]">
+      <div className="flex w-full gap-5" style={ isMobile ? {fontSize: "0.7rem"} : {fontSize: "1.1rem"}}>
+      <Card className="relative grow cursor-pointer p-1 w-full max-w-screen-lg" >
+          <div className="w-[90%]">
             <SelectInput
                 label={`Chọn mã tủ*`}
                 list={[
@@ -171,24 +185,28 @@ const ErrorHistoryNotifications = () => {
             />
           </div>
 
-        <div className="flex p-1 gap-1">
+        <>
+        <div className="w-[90%]">
         <DateTimeInput
-            label="Ngày bắt đầu"
-            value={dayStart}
-            setValue={setDayStart}
-            timeCompare={dayEnd}
-            type="timeStart"
-            className="flex-1 mb-4"
-        />
-        <DateTimeInput
-            label="Ngày kết thúc"
-            value={dayEnd}
-            setValue={setDayEnd}
-            timeCompare={dayStart}
-            type="timeEnd"
-            className="flex-1 mb-4"
-        />
+              label="Ngày bắt đầu"
+              value={dayStart}
+              setValue={setDayStart}
+              timeCompare={dayEnd}
+              type="timeStart"
+              className="flex-1 mb-4"
+          />
         </div>
+        <div className="w-[90%]">
+        <DateTimeInput
+              label="Ngày kết thúc"
+              value={dayEnd}
+              setValue={setDayEnd}
+              timeCompare={dayStart}
+              type="timeEnd"
+              className="flex-1 mb-4"
+          />
+        </div>
+        </>
 
         </Card> 
       </div>

@@ -32,6 +32,21 @@ const Data = () => {
   const [intervalId, setIntervalId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [connection, setConnection] = useState()
+
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   useEffect(() => {
   hubConnection.start().then((connection) => {
       setConnection(connection)
@@ -181,7 +196,7 @@ const Data = () => {
 
   return (
     <div className="container flex h-screen overflow-hidden">
-      <aside>
+      <aside className='z-[9999]'>
         <Sidebar />
       </aside>
 
@@ -235,7 +250,7 @@ const Data = () => {
         </div>
       </main>
 
-      <div className="absolute bottom-10 right-10">
+      <div className={`absolute ${isMobile ? 'bottom-6 right-6' :'bottom-10 right-10'}`}>
         <Card className="p-4">
           {/* Icon đầu: Operate */}
           <div className="flex items-center mb-4">

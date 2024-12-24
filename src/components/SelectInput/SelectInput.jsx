@@ -128,7 +128,7 @@ function SelectInput({
                 >
                     {label}
                 </label>
-                <div className="flex min-h-[58px] items-end pt-6">
+                <div className="flex min-h-[60px] items-end pt-6">
                     <div className="ml-2 flex w-fit min-w-[100px] max-w-[300px] flex-wrap">
                         {list
                             .filter((item) => value.includes(item.value))

@@ -103,6 +103,21 @@ const DetailData = () => {
         
   // ];
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   const [cabinets, setCabinets] = useState([]);
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -250,18 +265,22 @@ console.log(temperatureData);
       }}
     >
       {temperatureData.map((card) => (
+        <div key={card.id} className={isMobile ? "flex justify-center items-center" : ""}>
         <TemperatureMonitorCard
           key={card.id}
           {...card}
           onSettingsClick={handleSettingsClick}
         />
+        </div>
       ))}
       {velocityData.map((card) => (
+        <div key={card.id} className={isMobile ? "flex justify-center items-center" : ""}>
         <VelocityMonitorCard
           key={card.id}
           {...card}
           onSettingsClick={handleSettingsClick}
         />
+        </div>
       ))}
     </div>
 

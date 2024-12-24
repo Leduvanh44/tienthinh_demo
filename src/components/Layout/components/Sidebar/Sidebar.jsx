@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FaBars } from "react-icons/fa";
+import { MdExitToApp } from "react-icons/md";
 import SidebarItem from "./SidebarItem";
 import { SIDEBAR_ITEMS } from "@/utils/menuNavigation";
 
 const Sidebar = () => {
   const [isMinimized, setIsMinimized] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const [currentPath, setCurrentPath] = useState(location.pathname);
-
+  
+  const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -64,12 +65,12 @@ const Sidebar = () => {
         {isMobile && <button
             onClick={handleToggle}
             className={`fixed bottom-6 left-6 p-2 bg-gray-800 text-white rounded-lg z-50 ${
-                isMobile ? "block" : "hidden",
-                isMinimized ? "block" : "hidden"
+                isMobile ? "block" : "hidden"
+                // isMinimized ? "block" : "hidden"
             }`}
             aria-label="Toggle Sidebar"
             >
-            <FaBars size={24} />
+            {isMinimized ? <FaBars size={24} />: <MdExitToApp size={24} />}
         </button>}
 
       {/* Sidebar Content */}

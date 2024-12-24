@@ -42,7 +42,7 @@ const TableCustom = ({ data, handleDownload }) => {
             {["Lệnh sản xuất", "Loại men", "Khách hàng", "Kích thước dây", "Bắt đầu", "kết thúc", "Báo cáo"].map((header, index) => (
               <th
                 key={index}
-                className="px-6 py-4 text-left text-sm font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-950"
+                className="px-6 py-4 text-left font-semibold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-950"
                 onClick={() => handleSort(header.toLowerCase().replace(" ", ""))}
               >
                 <div className="flex items-center space-x-1">
@@ -61,28 +61,28 @@ const TableCustom = ({ data, handleDownload }) => {
                 index % 2 === 0 ? "bg-white" : "bg-gray-50"
               } hover:bg-gray-100 transition-colors duration-200`}
             >
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-6 py-4 whitespace-nowrap text-gray-900">
                 {row.workOrder}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-6 py-4 whitespace-nowrap text-gray-900">
                 {row.enamel}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-6 py-4 whitespace-nowrap text-gray-900">
                 {row.customer}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-6 py-4 whitespace-nowrap text-gray-900">
                 {row.size}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-6 py-4 whitespace-nowrap text-gray-900">
                 {formatDate(row.startAt)}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-6 py-4 whitespace-nowrap text-gray-900">
                 {formatDate(row.endAt)}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-6 py-4 whitespace-nowrap text-gray-900">
                 <button
                   onClick={() => handleDownload(row)}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary-5 hover:bg-blue-950 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex items-center px-3 py-2 border border-transparent leading-4 font-medium rounded-md text-white bg-primary-5 hover:bg-blue-950 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   // aria-label={`Download work order ${row}`}
                 >
                   <FaDownload className="mr-2" />

@@ -10,6 +10,8 @@ const TemperatureMonitorCard = ({
   alarmHigh,
   history,
   onSettingsClick,
+  width,
+  height
 }) => {
 
   const [deviceIsOff, setDeviceIsOff] = useState(false);

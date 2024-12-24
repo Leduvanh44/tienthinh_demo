@@ -13,8 +13,8 @@ import { CabinetsApi } from "../../services/api"
 import { toast } from "react-toastify";
 import Loading from "../../components/Layout/components/Loading/Loading";
 import ReactApexChart from "react-apexcharts";
-import { FiAlertCircle } from "react-icons/fi";
 import ToggleButtons from "@/components/ToggleButtons"
+
 const formatDate = (date, time) => {
   const yyyy = date.getFullYear();
   const MM = String(date.getMonth() + 1).padStart(2, "0");
@@ -34,6 +34,21 @@ const initialDayEnd = formatDate(now, endTime);
 const initialDayWOStart = formatDate(threeDaysAgo, startTime); 
 const initialDayWOEnd = formatDate(now, endTime); 
 const POV = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   const [dayStart, setDayStart] = useState(initialDayStart);
   const [dayEnd, setDayEnd] = useState(initialDayEnd);
   const [dayWOStart, setDayWOStart] = useState(initialDayWOStart);
@@ -71,6 +86,19 @@ const POV = () => {
       getDeviceList()
   }, [getDeviceList])
 
+  const getTimestamps = (timestamps) => {
+    const first = timestamps[0];
+    const last = timestamps[timestamps.length - 1];
+    const middle = timestamps[Math.floor(timestamps.length / 2)];
+
+    return timestamps.map((timestamp, index) => {
+        if (timestamp === first || timestamp === middle || timestamp === last) {
+            return timestamp;
+        }
+        return ''; 
+    });
+};
+
   const tempChart1Options = {
     chart: {
       type: "line",
@@ -93,13 +121,23 @@ const POV = () => {
       width: 2
     },
     title: {
-      text: `Nhiệt độ đạt được của 3 thiết bị tủ ${cabinetId[0]}: Từ ${dayWOStart} đến ${dayWOEnd}`,
+      text: `Nhiệt độ đạt được của 3 thiết bị tủ ${cabinetId.length === 0 ? "MD08" : cabinetId[0]}`,
       align: "left",
       style: {
-        fontSize: '16px', 
+        fontSize: isMobile ? '10px' : '16px', 
         fontWeight: 'bold', 
         fontFamily: 'Roboto', 
-        color: '#333' 
+        color: '#333',
+      }
+    },
+    subtitle: {
+      text: `Từ ${dayWOStart} đến ${dayWOEnd}`,
+      align: "left",
+      style: {
+        fontSize: isMobile ? '10px' : '16px', 
+        fontWeight: 'bold', 
+        fontFamily: 'Roboto', 
+        color: '#333',
       }
     },
     grid: {
@@ -111,14 +149,37 @@ const POV = () => {
     },
     xaxis: {
       categories: reportData.map(d => d.timestamp),
+      // labels: {
+      //     formatter: (value, index) => {
+      //         const timestamps = reportData.map(d => d.timestamp);
+      //         if (index === 0 || index === Math.floor(timestamps.length / 2) || index === timestamps.length - 1) {
+      //             return value;
+      //         }
+      //         return ''; 
+      //     }
+      // },
       title: {
-        text: "Time"
+        text: "Time",
+        align: "left",
+        style: {
+          fontSize: isMobile ? '12px': '16px', 
+          fontWeight: 'bold', 
+          fontFamily: 'Roboto', 
+          color: '#333',
+        }
       }
     },
+
     yaxis: {
       min: 0,
       title: {
-        text: "Temperature (°C)"
+        text: "Temperature (°C)",
+        style: {
+          fontSize: isMobile ? '12px': '16px', 
+          fontWeight: 'bold', 
+          fontFamily: 'Roboto', 
+          color: '#333',
+        }
       }
     },
     legend: {
@@ -127,10 +188,8 @@ const POV = () => {
     tooltip: {
       enabled: true,
       custom: function({ series, seriesIndex, dataPointIndex, w }) {
-        // Lấy dữ liệu từ tất cả các series và tạo một mảng để sắp xếp
         let tooltipContent = "<div style='padding: 10px;'>";
-  
-        // Tạo một mảng để chứa dữ liệu của các series
+        
         let seriesData = w.config.series.map((seriesItem, index) => {
           return {
             name: seriesItem.name,
@@ -138,11 +197,9 @@ const POV = () => {
             color: w.config.colors[index]
           };
         });
-  
-        // Sắp xếp mảng theo giá trị từ lớn đến nhỏ
+        
         seriesData.sort((a, b) => b.value - a.value);
-  
-        // Hiển thị các giá trị đã sắp xếp
+        
         seriesData.forEach(item => {
           tooltipContent += `
             <div>
@@ -155,7 +212,7 @@ const POV = () => {
         tooltipContent += "</div>";
         return tooltipContent;
       }
-    },
+    }
     // toolbar: {
     //   export: {
     //     png: `${cabinetId[0]}-${dayWOStart}${dayWOEnd}.png`
@@ -167,32 +224,58 @@ const POV = () => {
     ...tempChart1Options,
     colors: ["#FF4560", "#00E396", "#008FFB", "#775DD0"],
     title: {
-      text: `Nhiệt độ đạt được của 4 thiết bị tủ ${cabinetId[0]}: Từ ${dayWOStart} đến ${dayWOEnd}`,
+      text: `Nhiệt độ đạt được của 4 thiết bị tủ ${cabinetId.length === 0 ? "MD08" : cabinetId[0]}`,
       align: "left",
       style: {
-        fontSize: '16px', 
+        fontSize: isMobile ? '10px' : '16px', 
         fontWeight: 'bold', 
         fontFamily: 'Roboto', 
-        color: '#333' 
+        color: '#333',
       }
     },
+    subtitle: {
+      text: `Từ ${dayWOStart} đến ${dayWOEnd}`,
+      align: "left",
+      style: {
+        fontSize: isMobile ? '10px' : '16px', 
+        fontWeight: 'bold', 
+        fontFamily: 'Roboto', 
+        color: '#333',
+      }
+    }
   };
 
   const fanChartOptions = {
     ...tempChart1Options,
     title: {
-      text: `Tốc độ quạt đạt được của 4 thiết bị tủ ${cabinetId[0]}: Từ ${dayWOStart} đến ${dayWOEnd}`,
+      text: `Tốc độ quạt đạt được của 3 thiết bị tủ ${cabinetId.length === 0 ? "MD08" : cabinetId[0]}`,
       align: "left",
       style: {
-        fontSize: '16px', 
+        fontSize: isMobile ? '10px' : '16px', 
         fontWeight: 'bold', 
         fontFamily: 'Roboto', 
-        color: '#333' 
+        color: '#333',
+      }
+    },
+    subtitle: {
+      text: `Từ ${dayWOStart} đến ${dayWOEnd}`,
+      align: "left",
+      style: {
+        fontSize: isMobile ? '10px' : '16px', 
+        fontWeight: 'bold', 
+        fontFamily: 'Roboto', 
+        color: '#333',
       }
     },
     yaxis: {
       title: {
-        text: "Speed (RPM)"
+        text: "Speed (RPM)",
+        style: {
+          fontSize: isMobile ? '12px': '16px', 
+          fontWeight: 'bold', 
+          fontFamily: 'Roboto', 
+          color: '#333',
+        }
       }
     }
   };
@@ -359,8 +442,18 @@ const POV = () => {
         return response.json();
     });
       const results = await Promise.all(fetchPromises);
-      const combinedData = results.flat(); 
-      setReportData(convertData(combinedData));
+      let combinedData = results.flat(); 
+      combinedData = convertData(combinedData);
+      const uniqueTimestamps = {};
+      const filtered = combinedData.filter(item => {
+        const minuteTimestamp = item.timestamp.slice(0, 16); // lấy timestamp đến phút
+        if (!uniqueTimestamps[minuteTimestamp]) {
+          uniqueTimestamps[minuteTimestamp] = true;
+          return true;
+        }
+        return false;
+      });
+      setReportData(filtered);
     } catch (error) {
         toast.error(`Error fetching data: ${error.message}`);
     } finally {
@@ -485,11 +578,13 @@ const POV = () => {
     });
   };
 
-  // console.log(cabinetId)
+
+
+  console.log(pageIndex && !isMobile)
   // console.log(workOrder)
   // console.log(customer)
   // console.log(size)
-  console.log(searchReportList)
+  console.log(isMobile)
   // console.log(dayStart)
   // console.log(dayEnd)
   // console.log(dayWOStart)
@@ -497,20 +592,23 @@ const POV = () => {
 
   return (
   <div className="flex h-screen overflow-hidden w-full">
-    <aside>
+    <aside className='z-[9999]'>
       <Sidebar />
     </aside>
-      <div className="flex-1 flex flex-col p-6 h-screen overflow-auto">
+      <div className={`flex-1 flex flex-col ${isMobile ? 'p-2':'p-6'} h-screen overflow-auto`}>
         <h1 className="font-roboto text-2xl font-semibold mb-6">
             Báo cáo
         </h1>
-        <div className='py-3 gap-5 w-full'>
-        <ToggleButtons active={pageIndex} onClick={setPageIndex} titles={["Xuất báo cáo Excel", "Đồ thị báo cáo", "Tìm kiếm báo cáo Excel cũ"]} />
+        <div className={`py-3 gap-5 w-full font-roboto ${isMobile ? 'text-sm':'text-xl'}`}>
+        <ToggleButtons active={pageIndex} 
+        onClick={setPageIndex} 
+        titles={["Xuất Excel", "Đồ thị báo cáo", "Tìm file Excel cũ"]} 
+        />
         </div>
 
-        <div className="flex w-full gap-5">
-        <Card className="relative grow cursor-pointer p-1" >
-          <div className="w-[50%]">
+        <div className="flex w-full" style={ isMobile ? {fontSize: "0.7rem"} : {fontSize: "1.1rem"}}>
+        <Card className="relative p-1 w-full max-w-screen-lg">
+          <div className="w-[90%]">
             <SelectInput
                 label={pageIndex === 0 ? `Chọn mã tủ*` : `Chọn mã tủ`}
                 list={[
@@ -521,43 +619,55 @@ const POV = () => {
             />
           </div>
 
-        {pageIndex === 0 && <div className="flex p-1 gap-1">
+        {pageIndex === 0 && (
+        <>
+        <div className="w-[90%]">
         <DateTimeInput
-            label="Ngày bắt đầu"
-            value={dayStart}
-            setValue={setDayStart}
-            timeCompare={dayEnd}
-            type="timeStart"
-            className="flex-1 mb-4"
-        />
+              label="Ngày bắt đầu"
+              value={dayStart}
+              setValue={setDayStart}
+              timeCompare={dayEnd}
+              type="timeStart"
+              className="flex-1 mb-4"
+          />
+        </div>
+        <div className="w-[90%]">
         <DateTimeInput
-            label="Ngày kết thúc"
-            value={dayEnd}
-            setValue={setDayEnd}
-            timeCompare={dayStart}
-            type="timeEnd"
-            className="flex-1 mb-4"
-        />
-        </div>}
+              label="Ngày kết thúc"
+              value={dayEnd}
+              setValue={setDayEnd}
+              timeCompare={dayStart}
+              type="timeEnd"
+              className="flex-1 mb-4"
+          />
+        </div>
+        </>)
+        }
 
-        {pageIndex !== 0 && <div className="flex p-1 gap-1">
-        <DateTimeInput
+        {pageIndex !== 0 && (
+        <>
+          <div className="w-[90%]">
+          <DateTimeInput
             label="Từ ngày"
             value={dayWOStart}
             setValue={setDayWOStart}
             timeCompare={dayWOEnd}
             type="timeStart"
             className="flex-1 mb-4"
-        />
-        <DateTimeInput
+          />
+          </div>
+          <div className="w-[90%]">
+          <DateTimeInput
             label="đến ngày "
             value={dayWOEnd}
             setValue={setDayWOEnd}
             timeCompare={dayWOStart}
             type="timeEnd"
             className="flex-1 mb-4"
-        />
-        </div>}
+          />
+          </div>
+        </>)
+        }
 
         {(pageIndex ===0 || pageIndex ===2) && <div className="flex p-1 gap-1">
         <TextInput
@@ -592,7 +702,8 @@ const POV = () => {
             placeholder="(...ABC)"
         />
         </div> }
-        </Card> </div>
+        </Card> 
+        </div>
 
         {pageIndex ===0 && <div className="absolute bottom-4 right-8 flex gap-2">
         <Button onClick={() =>handleExportdata(cabinetId, workOrder, customer, enamel, size, dayStart, dayEnd, dayWOStart, dayWOEnd)}> 
@@ -601,7 +712,7 @@ const POV = () => {
         </div>}
 
 
-        {pageIndex ===1 && <div className="absolute bottom-4 right-8 flex gap-2">
+        {pageIndex ===1 && <div className="absolute bottom-4 right-8 flex gap-2 z-10">
         <Button onClick={() =>handleReportdata(dayWOStart, dayWOEnd, devices)}>
           Report
         </Button>
@@ -676,7 +787,8 @@ const POV = () => {
         </div>}
 
         {pageIndex === 2 && showDownloads && (
-          <div className="flex flex-col items-center w-full gap-5 font-roboto py-10">
+          <div className="flex flex-col items-center w-full gap-5 font-roboto py-10" 
+               style={{fontSize: '12px'}}>
               <>
               <TableCustom data={searchReportList} handleDownload={handleDownload} />
               </>
