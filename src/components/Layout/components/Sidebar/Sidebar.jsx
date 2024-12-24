@@ -10,16 +10,17 @@ const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [currentPath, setCurrentPath] = useState(location.pathname);
-  
   const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
+    // console.log(window.innerWidth, window.innerHeight)
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
+      setIsMobile(window.innerWidth <= 768 || window.innerHeight <= window.innerWidth);
     };
-
-    handleResize();
+  
+    handleResize(); 
     window.addEventListener("resize", handleResize);
-
+  
     return () => {
       window.removeEventListener("resize", handleResize);
     };
@@ -33,8 +34,6 @@ const Sidebar = () => {
     navigate(route);
     setCurrentPath(route);
   };
-  console.log("isMobile: ", isMobile)
-  console.log("isMinimized: ", isMinimized)
 
   const resetLoginData = () => {
     const savedData = localStorage.getItem("loginData");
@@ -60,50 +59,69 @@ const Sidebar = () => {
   const lastItem = SIDEBAR_ITEMS[SIDEBAR_ITEMS.length - 1];
 
   return (
-    <div className="transition-width relative flex flex-col bg-primary-5 text-neutron-4 duration-200 scroll-y h-full">
-      {/* Mobile Toggle Button*/}
-        {isMobile && <button
-            onClick={handleToggle}
-            className={`fixed bottom-6 left-6 p-2 bg-gray-800 text-white rounded-lg z-50 ${
-                isMobile ? "block" : "hidden"
-                // isMinimized ? "block" : "hidden"
-            }`}
-            aria-label="Toggle Sidebar"
-            >
-            {isMinimized ? <FaBars size={24} />: <MdExitToApp size={24} />}
-        </button>}
+    <div
+      className="transition-width relative flex flex-col bg-primary-5 text-neutron-4 duration-200 scroll-y h-full transition-all"
+      //                          relative flex flex-col h-full bg-primary-5 text-neutron-4 transition-all duration-300
+      onMouseEnter={() => {
+        if (!isMobile) {
+          setIsMinimized(false);
+        }
+      }}
+      onMouseLeave={() => {
+        if (!isMobile) {
+          setIsMinimized(true);
+        }
+      }}
+    >
+      {/* Mobile Toggle Button */}
+      {isMobile && (
+        <button
+          onClick={handleToggle}
+          className={`fixed bottom-6 left-6 p-2 bg-gray-800 text-white rounded-lg z-50`}
+          aria-label="Toggle Sidebar"
+        >
+          {isMinimized ? <FaBars size={24} /> : <MdExitToApp size={24} />}
+        </button>
+      )}
 
       {/* Sidebar Content */}
       <div
         className={`h-full bg-gray-800 text-white transition-all duration-300 ease-in-out ${
-          isMinimized && isMobile ? "w-0 overflow-hidden" : isMinimized ? "w-[90px] sm:invisible sm:w-0" : "visible w-[200px] sm:w-screen"
+          isMinimized && isMobile
+            ? "w-0 overflow-hidden"
+            : isMinimized
+            ? "w-[90px] sm:invisible sm:w-0"
+            : "visible w-[200px] sm:w-screen"
         } ${
-          isMobile ? (isMinimized ? "translate-x-[-100%]" : "translate-x-0") : ""
+          isMobile
+            ? isMinimized
+              ? "translate-x-[-100%]"
+              : "translate-x-0"
+            : ""
         }`}
       >
         <div className="p-4 flex items-center justify-between border-b border-gray-700">
-        {/* Icon FaBars */}
-        <button
+          <button
             onClick={handleToggle}
             className="p-2 hover:bg-gray-700 rounded-lg transition-colors duration-200 flex items-center"
             aria-label="Toggle Sidebar"
-        >
+          >
             <FaBars size={24} />
-        </button>
+          </button>
 
-        {!isMinimized && <div
-            className="mx-auto flex items-center gap-3 cursor-pointer rounded-xl"
-            onClick={handleToggle}
-        >
-            <img
-            src="/31.png"
-            className="w-[90%] sm:w-1/2 px-2 py-2"
-            alt="Menu Icon"
-            />
-        </div>}
-
+          {!isMinimized && (
+            <div
+              className="mx-auto flex items-center gap-3 cursor-pointer rounded-xl"
+              onClick={handleToggle}
+            >
+              <img
+                src="/31.png"
+                className="w-[90%] sm:w-1/2 px-2 py-2"
+                alt="Menu Icon"
+              />
+            </div>
+          )}
         </div>
-
 
         <nav className="mt-6">
           <ul className="space-y-2 px-4">
@@ -127,7 +145,6 @@ const Sidebar = () => {
             />
           </ul>
         </nav>
-
       </div>
     </div>
   );

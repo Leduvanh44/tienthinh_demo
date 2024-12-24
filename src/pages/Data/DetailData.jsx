@@ -106,13 +106,14 @@ const DetailData = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    // console.log(window.innerWidth, window.innerHeight)
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
+      setIsMobile(window.innerWidth <= 768 || window.innerHeight <= window.innerWidth);
     };
-
-    handleResize();
+  
+    handleResize(); 
     window.addEventListener("resize", handleResize);
-
+  
     return () => {
       window.removeEventListener("resize", handleResize);
     };
