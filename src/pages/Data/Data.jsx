@@ -37,6 +37,7 @@ const Data = () => {
   useEffect(() => {
     // console.log(window.innerWidth, window.innerHeight)
     const handleResize = () => {
+      console.log(window.innerWidth, window.innerHeight)
       setIsMobile(window.innerWidth <= 768 || window.innerHeight <= window.innerWidth);
     };
   

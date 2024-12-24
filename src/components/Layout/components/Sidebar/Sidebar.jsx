@@ -13,9 +13,9 @@ const Sidebar = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // console.log(window.innerWidth, window.innerHeight)
+    console.log(window.innerWidth, window.innerHeight)
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768 || window.innerHeight <= window.innerWidth);
+      setIsMobile(window.innerWidth <= 768);
     };
   
     handleResize(); 
