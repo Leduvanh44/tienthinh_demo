@@ -493,7 +493,7 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
 
       while (current.isBefore(end) || current.isSame(end)) {
         allTimestamps.push(current.format("YYYY-MM-DDTHH:mm")); 
-        current = current.add(5, 'minute'); 
+        current = current.add(30, 'minute'); 
       }
       console.log("allTimestamps: ", allTimestamps)
       const existingTimestamps = new Set(updateTimeStamp.map(item => item.timestamp));
@@ -502,18 +502,18 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
         .filter(timestamp => !existingTimestamps.has(timestamp))
         .map(timestamp => ({
           timestamp,
-          "MD8/FanInverter/0": 0,
-          "MD8/FanInverter/1": 0,
-          "MD8/FanInverter/2": 0,
-          "MD8/FanInverter/3": 0,
-          "MD8/FanInverter/4": 0,
-          "MD8/HeatController/0": 0,
-          "MD8/HeatController/1": 0,
-          "MD8/HeatController/2": 0,
-          "MD8/HeatController/3": 0,
-          "MD8/HeatController/4": 0,
-          "MD8/HeatController/5": 0,
-          "MD8/HeatController/6": 0
+          "MD8/FanInverter/0": null,
+          "MD8/FanInverter/1": null,
+          "MD8/FanInverter/2": null,
+          "MD8/FanInverter/3": null,
+          "MD8/FanInverter/4": null,
+          "MD8/HeatController/0": null,
+          "MD8/HeatController/1": null,
+          "MD8/HeatController/2": null,
+          "MD8/HeatController/3": null,
+          "MD8/HeatController/4": null,
+          "MD8/HeatController/5": null,
+          "MD8/HeatController/6": null
         }));
     
       const updatedReportData = [...updateTimeStamp, ...missingData].sort((a, b) =>

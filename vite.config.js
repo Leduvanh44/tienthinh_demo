@@ -8,7 +8,7 @@ export default defineConfig({
     alias: [{ find: "@", replacement: "/src" }],
   },
   server: {
-    host: '192.168.100.178', 
+    host: 'localhost', 
     port: 3000,     
   },
 })
