@@ -202,14 +202,13 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
             color: w.config.colors[index]
           };
         });
-        
         seriesData.sort((a, b) => b.value - a.value);
         
         seriesData.forEach(item => {
           tooltipContent += `
             <div>
               <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${item.color}; margin-right: 8px;"></span>
-              <strong>${item.name}:</strong> ${item.value.toFixed(2)} °C
+              <strong>${item.name}:</strong> ${item.value===null ? "Không có dữ liệu" : item.value.toFixed(2)} °C
             </div>
           `;
         });
@@ -351,7 +350,7 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
     setLoading(true);
     try {
         const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Cabinets/Export?CabinetId=${cabinetId[0]}&WorkOrder=${row.workOrder}&Customer=${row.customer}&Enamel=${row.enamel}&Size=${row.size}&StartTime=${row.startAt.replace("T", " ")}&EndTime=${row.endAt.replace("T", " ")}&StartAt=${row.startAt.replace("T", " ")}&EndAt=${row.endAt.replace("T", " ")}`;
-        console.log(url);
+        // console.log(url);
         const getResponse = await fetch(url, { method: "GET" });
         if (getResponse.ok) {
             const blob = await getResponse.blob();
@@ -447,7 +446,7 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
     //     toast.error(`Vui lòng nhập đầy đủ thông tin: ${missingFields.join(", ")}`);
     //     return;
     // }
-    console.log(startTime, endTime, isDayEndAfterDayStart(startTime, endTime))
+    // console.log(startTime, endTime, isDayEndAfterDayStart(startTime, endTime))
     if ((!isDayEndAfterDayStart(startTime, endTime))) {
       toast.error("Thời gian bắt đầu phải trước thời gian kết thúc");
       return;
@@ -460,7 +459,7 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
     try {
       const fetchPromises = devices.map(async deviceId => {
         const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Shots?DeviceId=${deviceId}&StartTime=${startTime.replace("T", " ")}&EndTime=${endTime.replace("T", " ")}`;
-        console.log(url);
+        // console.log(url);
         const response = await fetch(url, { method: "GET" });
         if (!response.ok) {
             throw new Error(`Failed to fetch data for DeviceId: ${deviceId}`);
@@ -470,6 +469,27 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
       const results = await Promise.all(fetchPromises);
       let combinedData = results.flat(); 
       combinedData = convertData(combinedData);
+      // console.log(combinedData)
+      combinedData = combinedData.map(item => {
+        const keysToCheck = [
+            "MD8/HeatController/0",
+            "MD8/HeatController/1",
+            "MD8/HeatController/2",
+            "MD8/HeatController/3",
+            "MD8/HeatController/4",
+            "MD8/HeatController/5",
+            "MD8/HeatController/6"
+        ];
+        
+        keysToCheck.forEach(key => {
+            if (item[key] === -1) {
+                item[key] = null;
+            }
+        });
+
+        return item;
+    });
+
       const uniqueTimestamps = {};
       let filtered = combinedData.filter(item => {
         const minuteTimestamp = item.timestamp.slice(0, 16);
@@ -485,17 +505,18 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
         ...item,
         timestamp: item.timestamp.slice(0, 16)
       }));
-      console.log(updateTimeStamp)
+      // console.log(updateTimeStamp)
+      
       const allTimestamps = [];
       let current = dayjs(convertToISOFormat(startTime));
       const end = dayjs(convertToISOFormat(endTime));
-      console.log("allTimestamps: ", current, end)
+      // console.log("allTimestamps: ", current, end)
 
       while (current.isBefore(end) || current.isSame(end)) {
         allTimestamps.push(current.format("YYYY-MM-DDTHH:mm")); 
         current = current.add(30, 'minute'); 
       }
-      console.log("allTimestamps: ", allTimestamps)
+      // console.log("allTimestamps: ", allTimestamps)
       const existingTimestamps = new Set(updateTimeStamp.map(item => item.timestamp));
     
       const missingData = allTimestamps
@@ -651,7 +672,7 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
   // console.log(workOrder)
   // console.log(customer)
   // console.log(size)
-  console.log(reportData.map(d => d.timestamp))
+  // console.log(reportData.map(d => d.timestamp))
   // console.log(dayStart)
   // console.log(dayEnd)
   console.log(dayWOStart)
