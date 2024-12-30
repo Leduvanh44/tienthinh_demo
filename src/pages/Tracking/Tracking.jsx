@@ -152,7 +152,9 @@ const ErrorHistoryNotifications = () => {
       }
       const data = await response.json();
       console.log("Data received:", data);
-      setSearchErrHistory(data);
+      const sortedData = data.sort((a, b) => new Date(a.timeStamp) - new Date(b.timeStamp));
+      console.log("Sorted Data:", sortedData);
+      setSearchErrHistory(sortedData);
       setShowDownloads(true);
     } catch (error) {
       console.error("Error fetching report data:", error);
