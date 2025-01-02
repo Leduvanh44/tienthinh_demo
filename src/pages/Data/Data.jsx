@@ -54,6 +54,7 @@ const Data = () => {
       setConnection(connection)
   })
   }, [])
+  console.log(connection)
 
   useEffect(() => {
     if (connection) {
