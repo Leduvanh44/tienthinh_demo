@@ -1,10 +1,10 @@
 import { HubConnectionBuilder, HttpTransportType } from '@microsoft/signalr'
 // import { authStorageService } from '@/services/browserStorage'
-
+// import signalR from '@microsoft/signalr'
 const connection = new HubConnectionBuilder() //Lớp tạo một kết nối tới một SignalR Hub
     .withUrl(import.meta.env.VITE_SERVER_ADDRESS+ '/NotificationHub', {
-        transport: HttpTransportType.WebSockets,
-        skipNegotiation: true,
+        transport: HttpTransportType.WebSockets | HttpTransportType.ServerSentEvents | HttpTransportType.LongPolling,        
+//        skipNegotiation: true,
         // accessTokenFactory: authStorageService.accessToken.get,
     }) //Thiết lập URL của Hub để kết nối. Đồng thời các tham số đặc biệt được truyền vào như transport, skipNegotiation, accessTokenFactory.
     .withAutomaticReconnect() //Thiết lập kết nối tự động khởi động lại khi bị mất kết nối.
