@@ -4,7 +4,6 @@ const paths = {
     DetailData: "/Data/:id",
     Tracking: "/Error",
     POV: "/Report",
-    DetailPOV: "/POV/:devideId",
     Logout:"/"
     // resource: "/resource",
     // resourceType: "/resource/:type",

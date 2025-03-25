@@ -43,7 +43,7 @@ const TableCustomErr = ({ data }) => {
       >
         <thead>
           <tr className="bg-primary-5 border-b border-t border-gray-200 hover:to-blue-900">
-            {["Tên lỗi", "Thời gian lỗi", "Chi tiết lỗi", "Cập nhật lỗi", "Trạng thái"].map((header, index) => (
+            {["Tên lỗi", "Thời gian bắt đầu lỗi", "Thời gian kết thúc lỗi", "Danh sách thiết bị lỗi", "Cập nhật lỗi", "Trạng thái"].map((header, index) => (
               <th
                 key={index}
                 className="px-6 py-4 text-left text-sm font-roboto text-white uppercase tracking-wider"
@@ -62,21 +62,26 @@ const TableCustomErr = ({ data }) => {
               >
                 {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.errorId}</td> */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(row.timeStamp)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.description}</td>
+                <td className="px-6 py-4 whitespace-normal text-sm text-gray-900">{formatDate(row.startTimeStamp)}</td>
+                <td className="px-6 py-4 whitespace-normal text-sm text-gray-900">{formatDate(row.endTimeStamp)}</td>
+                <td className="px-6 py-4 whitespace-normal text-sm text-gray-900">
+                  {row.descriptions.map((desc, index) => (
+                    <div key={index}>{desc}</div>
+                  ))}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   <Button
                     onClick={() => openResolutionPopup(row.errorId)}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                    className="px-4 py-2 bg-primary-1 text-white rounded hover:bg-primary-1 transition-colors"
                   >
                     Check Error
                   </Button>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 flex justify-center items-center">
+                <td className="px-12 py-4 whitespace-nowrap text-sm text-gray-900">
                   {!row.hasError ? (
-                    <span className="text-red-500 text-2xl">⚠</span>
+                    <span className="text-red-500 text-6xl">⚠</span>
                   ) : (
-                    <span className="text-green-500 text-2xl">✔</span>
+                    <span className="text-green-500 text-6xl">✔</span>
                   )}
                 </td>
               </tr>

@@ -41,14 +41,6 @@ const routes = [
         protected: true,
     },
 
-    {
-        path: paths.DetailPOV,
-        title: null,
-        component: Pages.DetailPOV,
-        layout: "main",
-        protected: true,
-    },
-
 ]
 
 export default routes

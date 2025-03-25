@@ -41,7 +41,7 @@ const ErrorNotification = ({ notification, toggleExpand, openResolutionPopup, op
               e.stopPropagation();
               openPopup(notification);
             }}
-            className="px-3 py-1 text-sm bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+            className="px-3 py-1 text-sm bg-primary-1 text-white rounded-full hover:bg-primary-1 transition-colors"
             aria-label="View details"
           >
             Details

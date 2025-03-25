@@ -1,155 +1,61 @@
 import Sidebar from '../../components/Layout/components/Sidebar'
-import { useLocation, useParams } from "react-router-dom"
+import { useLocation } from "react-router-dom"
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import TemperatureMonitorCard from "@/components/TemperatureMonitoringCard";
 import VelocityMonitorCard from "@/components/TemperatureMonitoringCard/VelocityMonitorCard";
-import { current } from "@reduxjs/toolkit";
 import hubConnection from "@/services/signalr/productionProgress/hubConnection"
 import Loading from "../../components/Layout/components/Loading/Loading";
-
+import MonitorAddCard from "@/components/TemperatureMonitoringCard/MonitorAddCard"
 
 const DetailData = () => {
   const location = useLocation()
   const { data } = location.state
-
-  // const velocityData = [
-  //   {
-  //     id: 1,
-  //     name: "Server Vel A",
-  //     currentVel: 75,
-  //   },
-  //   {
-  //   id: 2,
-  //   name: "Server Vel B",
-  //   currentVel: 75,
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Server Vel c",
-  //     currentVel: 75,
-  //     },
-  //     {
-  //       id: 4,
-  //       name: "Server Vel A",
-  //       currentVel: 75,
-  //     }
-  // ];
-
-  // const temperatureData = [
-  //   {
-  //     id: 1,
-  //     name: "Nhiệt đầu vào",
-  //     currentTemp: 75,
-  //     setPoint: 72,
-  //     alarmLow: 65,
-  //     alarmHigh: 80,
-  //     history: Array.from({ length: 24 }, () => Math.floor(Math.random() * 15) + 65),
-  //   },
-  //   {
-  //   id: 2,
-  //   name: "Nhiệt trung tâm",
-  //   currentTemp: 75,
-  //   setPoint: 72,
-  //   alarmLow: 65,
-  //   alarmHigh: 80,
-  //   history: Array.from({ length: 24 }, () => Math.floor(Math.random() * 15) + 65),
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Nhiệt đầu ra",
-  //     currentTemp: 75,
-  //     setPoint: 72,
-  //     alarmLow: 65,
-  //     alarmHigh: 80,
-  //     history: Array.from({ length: 24 }, () => Math.floor(Math.random() * 15) + 65),
-  //     },
-  //     {
-  //       id: 4,
-  //       name: "Nhiệt ủ mềm",
-  //       currentTemp: 75,
-  //       setPoint: 72,
-  //       alarmLow: 65,
-  //       alarmHigh: 80,
-  //       history: Array.from({ length: 24 }, () => Math.floor(Math.random() * 15) + 65),
-  //     },
-  //     {
-  //     id: 5,
-  //     name: "Nhiệt tuần hoàn",
-  //     currentTemp: 100,
-  //     setPoint: 72,
-  //     alarmLow: 65,
-  //     alarmHigh: 80,
-  //     history: Array.from({ length: 24 }, () => Math.floor(Math.random() * 15) + 65),
-  //     },
-  //     {
-  //       id: 6,
-  //       name: "Before",
-  //       currentTemp: 75,
-  //       setPoint: 72,
-  //       alarmLow: 65,
-  //       alarmHigh: 80,
-  //       history: Array.from({ length: 24 }, () => Math.floor(Math.random() * 15) + 65),
-  //       },
-  //       {
-  //         id: 7,
-  //         name: "After",
-  //         currentTemp: 75,
-  //         setPoint: 72,
-  //         alarmLow: 65,
-  //         alarmHigh: 80,
-  //         history: Array.from({ length: 24 }, () => Math.floor(Math.random() * 15) + 65),
-  //         },
-        
-  // ];
-
   const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    // console.log(window.innerWidth, window.innerHeight)
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768 || window.innerHeight <= window.innerWidth);
-    };
-  
-    handleResize(); 
-    window.addEventListener("resize", handleResize);
-  
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
-  const [cabinets, setCabinets] = useState([]);
-  const [devices, setDevices] = useState([]);
+  // const [cabinet, setCabinet] = useState(data.name);
+  // const [devices, setDevices] = useState(data.dev);
   const [loading, setLoading] = useState(true);
   const [intervalId, setIntervalId] = useState(null);
   const [connection, setConnection] = useState()
-
   const [presentValueFI, setPresentValueFI] = useState([]);
-
   const [errorFI, setErrorFI] = useState([]);
-
   const [setValueHC, setSetValueHC] = useState([]);
-
   const [errorHC, setErrorHC] = useState([]);  
-
   const [presentValueHC, setPresentValueHC] = useState([]);
-
   const [AlarmLowThresholdValueHC, setAlarmLowThresholdValueHC] = useState([]);
   const [AlarmHighThresholdValueHC, setAlarmHighThresholdValueHC] = useState([]);
+  const [showSettings, setShowSettings] = useState(false);
+  const [selectedCard, setSelectedCard] = useState(null);
 
   useEffect(() => {
   hubConnection.start().then((connection) => {
       setConnection(connection)
   })
   }, [])
+
+  useEffect(() => {
+    // console.log(window.innerWidth, window.innerHeight)
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768 || window.innerHeight <= window.innerWidth);
+    };
+
+    handleResize(); 
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   useEffect(() => {
     if (connection) {
         const id = setInterval(async () => {
             if (connection.state === 'Connected') {
                 try {
-                    const data = await connection.invoke('SendAll');
-                    const parsedData = JSON.parse(data);
+                    const dataCabinet = await connection.invoke('SendAll');
+                    // console.log(dataCabinet);
+                    const parsedData = JSON.parse(dataCabinet);
+                    console.log(parsedData);
                     const presentValueFanInverterData = [];
                     const presentValueHeatControllerData = [];
                     const setValueHeatControllerData = [];
@@ -158,26 +64,27 @@ const DetailData = () => {
                     const errorFanInverterData = [];
                     const errorHeatControllerData = [];
                     parsedData.forEach(item => {
-                    if (item.MessageType === "PresentValue" && item.DeviceId.includes("FanInverter")) {
+                    if (item.MessageType === "PresentValue" && item.DeviceId.includes(`${data.name}/FanInverter`)) {
                     presentValueFanInverterData.push(item);
-                    } else if (item.MessageType === "PresentValue" && item.DeviceId.includes("HeatController")) {
+                    } else if (item.MessageType === "PresentValue" && item.DeviceId.includes(`${data.name}/HeatController`)) {
                     presentValueHeatControllerData.push(item);
-                    } else if (item.MessageType === "SetValue" && item.DeviceId.includes("HeatController")) {
-                        setValueHeatControllerData.push(item);
-                    } else if (item.MessageType === "AlarmLowThresholdValue") {
+                    } else if (item.MessageType === "SetValue" && item.DeviceId.includes(`${data.name}/HeatController`)) {
+                    setValueHeatControllerData.push(item);
+                    } else if (item.MessageType === "LowThresholdSetValue" && item.DeviceId.includes(`${data.name}/HeatController`)){
                     alarmLowThresholdValueData.push(item);
-                    } else if (item.MessageType === "AlarmHighThresholdValue") {
+                    } else if (item.MessageType === "HighThresholdSetValue" && item.DeviceId.includes(`${data.name}/HeatController`)){
                     alarmHighThresholdValueData.push(item);
-                    } else if (item.MessageType === "Error" && item.DeviceId.includes("HeatController")) {
-                        errorHeatControllerData.push(item);
-                    } else if (item.MessageType === "Error" && item.DeviceId.includes("FanInverter")) {
-                        errorFanInverterData.push(item);
+                    } else if (item.MessageType === "Error" && item.DeviceId.includes(`${data.name}/HeatController`)) {
+                    errorHeatControllerData.push(item);
+                    } else if (item.MessageType === "Error" && item.DeviceId.includes(`${data.name}/FanInverter`)) {
+                    errorFanInverterData.push(item);
                     }
-                    });
+                    });  
+
                     setPresentValueHC(presentValueHeatControllerData);
                     setPresentValueFI(presentValueFanInverterData);
-                    setAlarmLowThresholdValueHC(alarmLowThresholdValueData);
                     setAlarmHighThresholdValueHC(alarmHighThresholdValueData);
+                    setAlarmLowThresholdValueHC(alarmLowThresholdValueData);
                     setErrorFI(errorFanInverterData);
                     setErrorHC(errorHeatControllerData);
                     setSetValueHC(setValueHeatControllerData);
@@ -199,11 +106,10 @@ const DetailData = () => {
     console.log("presentValueHC: ", presentValueHC)
     console.log("AlarmLowThresholdValueHC: ", AlarmLowThresholdValueHC)
     console.log("AlarmHighThresholdValueHC: ", AlarmHighThresholdValueHC)
-
-    
+    console.log(data);
   const velocityData = presentValueFI.map((item, index) => {
       const correspondingDevice = data.dev.find(
-          (device) => device.deviceId === `MD8/FanInverter/${index}`
+          (device) => device.deviceId === `${data.name}/FanInverter/${index}`
       );
       return {
           id: correspondingDevice ? correspondingDevice.deviceId : null,
@@ -213,7 +119,7 @@ const DetailData = () => {
   });
 
   let temperatureData = data.dev
-  .filter((device) => device.deviceType.deviceTypeId === "HeatController") // Lọc thiết bị "HeatController"
+  .filter((device) => device.deviceId.includes(`${data.name}/HeatController`)) // Lọc thiết bị "HeatController"
   .map((device, index) => {
     const id = device.deviceId;
     const name = device.name;
@@ -237,11 +143,8 @@ const DetailData = () => {
     };
   });
 
-console.log(temperatureData);
-// console.log(presentValueHC);
-
-  const [showSettings, setShowSettings] = useState(false);
-  const [selectedCard, setSelectedCard] = useState(null);
+  console.log(temperatureData);
+  console.log(velocityData);
 
   const handleSettingsClick = (e, card) => {
     e.stopPropagation();
@@ -283,6 +186,9 @@ console.log(temperatureData);
         />
         </div>
       ))}
+      <div key="add" className={isMobile ? "flex justify-center items-center" : ""}>
+      <MonitorAddCard></MonitorAddCard>
+      </div>
     </div>
 
     {showSettings && selectedCard && (

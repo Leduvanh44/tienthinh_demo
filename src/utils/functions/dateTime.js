@@ -84,7 +84,7 @@ export const convertDataProductionSchedule = (inputData) => {
     inputData.forEach((item) => {
         if (item.workOrderStatus == 2) {
             const name = `${item.workOrderId}[${item.manufacturingOrder}]`
-            const machine = item.manufacturingOrder // Thay đổi tên máy ở đây nếu cần
+            const machine = item.manufacturingOrder
 
             const startTime = isoToTimestamp(item.startTime)
             const endTime = isoToTimestamp(item.endTime)

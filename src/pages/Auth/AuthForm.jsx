@@ -84,7 +84,6 @@ const LoginForm = () => {
 
   return (
 <div className="flex flex-col items-center justify-center w-full min-h-screen">
-  {/* Container hình ảnh */}
   <div className="flex items-center justify-center mb-4">
     <img
       src="/28.png"
@@ -93,7 +92,6 @@ const LoginForm = () => {
     />
   </div>
 
-  {/* Form đăng nhập */}
   <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl">
     <div>
       <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 font-roboto">

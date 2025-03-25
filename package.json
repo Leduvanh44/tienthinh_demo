@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.22.0",
     "@microsoft/signalr": "^7.0.14",
     "@reduxjs/toolkit": "^2.4.0",
     "apexcharts": "^3.37.2",
@@ -25,7 +26,8 @@
     "react-icons": "^4.8.0",
     "react-redux": "^8.0.5",
     "react-router-dom": "^6.9.0",
-    "react-toastify": "^9.1.2"
+    "react-toastify": "^9.1.2",
+    "react-window": "^1.8.11"
   },
   "devDependencies": {
     "@types/react": "^18.0.26",

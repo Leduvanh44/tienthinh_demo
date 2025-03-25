@@ -7,19 +7,126 @@ import hubConnection from "@/services/signalr/productionProgress/hubConnection"
 import { CabinetsApi } from "../../services/api"
 import { useCallApi } from "@/hooks"
 import Loading from "../../components/Layout/components/Loading/Loading";
-import { FaCheck, FaTimes, FaExclamationTriangle } from "react-icons/fa";
+import { FaCheck, FaTimes } from "react-icons/fa";
 import Card from "@/components/Card";
 
 const Data = () => {
-  const [cabinetFake] = useState([
-    { id: 2, name: "MD01", status: "operating", errors: 0 , isError: false},
-    { id: 3, name: "MD02", status: "operating", errors: 3 , isError: false},
-    { id: 4, name: "MD03", status: "stopped", errors: 0 , isError: false},
-    { id: 5, name: "MD04", status: "operating", errors: 3 , isError: false},
-  ]);
-  const callApi = useCallApi();
-  const navigate = useNavigate()
+  const [cabinetFake] = useState(
+  [{
+        "cabinetId": "MD08",
+        "name": "T? di?n MD08",
+        "errorCount": 1553,
+        "devices": [
+            {
+                "deviceId": "MD08/FanInverter/0",
+                "name": "Quạt trộn nhiệt",
+                "deviceType": {
+                    "deviceTypeId": "FanInverter",
+                    "name": "Biến tần quạt"
+                }
+            },
+            {
+                "deviceId": "MD08/FanInverter/1",
+                "name": "Captang A",
+                "deviceType": {
+                    "deviceTypeId": "FanInverter",
+                    "name": "Biến tần quạt"
+                }
+            },
+            {
+                "deviceId": "MD08/FanInverter/2",
+                "name": "Captang B",
+                "deviceType": {
+                    "deviceTypeId": "FanInverter",
+                    "name": "Biến tần quạt"
+                }
+            },
+            {
+                "deviceId": "MD08/FanInverter/3",
+                "name": "Khí đầu vào",
+                "deviceType": {
+                    "deviceTypeId": "FanInverter",
+                    "name": "Biến tần quạt"
+                }
+            },
+            {
+                "deviceId": "MD08/FanInverter/4",
+                "name": "Quạt hút khói",
+                "deviceType": {
+                    "deviceTypeId": "FanInverter",
+                    "name": "Biến tần quạt"
+                }
+            },
+            {
+                "deviceId": "MD08/HeatController/0",
+                "name": "Nhiệt đầu vào",
+                "deviceType": {
+                    "deviceTypeId": "HeatController",
+                    "name": "Đồng hồ nhiệt"
+                }
+            },
+            {
+                "deviceId": "MD08/HeatController/1",
+                "name": "Nhiệt trung tâm",
+                "deviceType": {
+                    "deviceTypeId": "HeatController",
+                    "name": "Đồng hồ nhiệt"
+                }
+            },
+            {
+                "deviceId": "MD08/HeatController/2",
+                "name": "Nhiệt đầu ra",
+                "deviceType": {
+                    "deviceTypeId": "HeatController",
+                    "name": "Đồng hồ nhiệt"
+                }
+            },
+            {
+                "deviceId": "MD08/HeatController/3",
+                "name": "Nhiệt ủ mềm",
+                "deviceType": {
+                    "deviceTypeId": "HeatController",
+                    "name": "Đồng hồ nhiệt"
+                }
+            },
+            {
+                "deviceId": "MD08/HeatController/4",
+                "name": "Nhiệt tuần hoàn",
+                "deviceType": {
+                    "deviceTypeId": "HeatController",
+                    "name": "Đồng hồ nhiệt"
+                }
+            },
+            {
+                "deviceId": "MD08/HeatController/5",
+                "name": "Before",
+                "deviceType": {
+                    "deviceTypeId": "HeatController",
+                    "name": "Đồng hồ nhiệt"
+                }
+            },
+            {
+                "deviceId": "MD08/HeatController/6",
+                "name": "After",
+                "deviceType": {
+                    "deviceTypeId": "HeatController",
+                    "name": "Đồng hồ nhiệt"
+                }
+            }
+        ]
+    }
+  ,
+  {
+      "cabinetId": "MD01",
+      "name": "T? di?n MD01",
+      "errorCount": 0,
+      "devices": [
+      ]
+  }
+]);
 
+  const callApi = useCallApi();
+  const navigate = useNavigate();
   const [presentValueFI, setPresentValueFI] = useState([]);
   const [errorFI, setErrorFI] = useState([]);
   const [setValueHC, setSetValueHC] = useState([]);
@@ -27,13 +134,27 @@ const Data = () => {
   const [presentValueHC, setPresentValueHC] = useState([]);
   const [AlarmLowThresholdValueHC, setAlarmLowThresholdValueHC] = useState([]);
   const [AlarmHighThresholdValueHC, setAlarmHighThresholdValueHC] = useState([]);
+
+  const [state, setState] = useState({
+
+    presentValueFI: [],
+    errorFI: [],
+    setValueHC: [],
+    errorHC: [],
+    presentValueHC: [],
+    AlarmLowThresholdValueHC: [],
+    AlarmHighThresholdValueHC: []
+  });
+  
+
+  
   const [cabinets, setCabinets] = useState([]);
   const [devices, setDevices] = useState([]);
   const [intervalId, setIntervalId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [connection, setConnection] = useState()
-
   const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
     // console.log(window.innerWidth, window.innerHeight)
     const handleResize = () => {
@@ -54,8 +175,7 @@ const Data = () => {
       setConnection(connection)
   })
   }, [])
-  console.log(connection)
-
+  // console.log(connection)
   useEffect(() => {
     if (connection) {
         const id = setInterval(async () => {
@@ -63,6 +183,7 @@ const Data = () => {
                 try {
                     const data = await connection.invoke('SendAll');
                     const parsedData = JSON.parse(data);
+                    console.log(parsedData);
                     const presentValueFanInverterData = [];
                     const presentValueHeatControllerData = [];
                     const setValueHeatControllerData = [];
@@ -102,7 +223,7 @@ const Data = () => {
         setIntervalId(id);
 
         return () => {
-            clearInterval(id); 
+            clearInterval(id);
         };
     }
   }, [connection]);
@@ -115,8 +236,7 @@ const Data = () => {
         const errorCount = errors.filter(
           error =>
             deviceIds.includes(error.DeviceId) && 
-            error.TagValue === 1 && 
-            error.DeviceId !== "MD8/HeatController/2" 
+            error.TagValue === 1
         ).length;
         const isError = errorCount > 0;
         const firstValue = statusData[1]?.TagValue ?? 0;
@@ -141,7 +261,8 @@ const Data = () => {
 
     });
   };
-  
+
+  console.log(cabinets)
   useEffect(() => {
     callApi(
         () => CabinetsApi.Cabinets.getCabinets(),
@@ -151,20 +272,23 @@ const Data = () => {
     );
 }, [errorFI, errorHC, presentValueFI]);
 
+
+
   const getDeviceList = useCallback(() => {
       callApi(
-          () => CabinetsApi.Cabinets.getDevices(),
+          () => CabinetsApi.Cabinets.getDevices(""),
           (data) => setDevices(data),
       )
   }, [callApi])
+  
   useEffect(() => {
       getDeviceList()
   }, [getDeviceList])
 
-  console.log(cabinets)
-  console.log(devices)
-  console.log("errorHC: ", errorHC)
-  console.log("errorFI: ", errorFI)
+  // console.log(cabinets)
+  // console.log(devices)
+  // console.log("errorHC: ", errorHC)
+  // console.log("errorFI: ", errorFI)
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
@@ -213,9 +337,9 @@ const Data = () => {
           {cabinets.map((cabinet) => (
             <div
               key={cabinet.id}
-              className="flex-shrink-0" // Prevent shrinking
+              className="flex-shrink-0" 
               style={{
-                flexBasis: calculateFlexBasis(), // Dynamically adjust based on screen size
+                flexBasis: calculateFlexBasis(),
               }}
             >
               <CabinetCard
@@ -227,35 +351,34 @@ const Data = () => {
                 handleClickDetail={handleClickDetail}
                 height={500}
                 width={300}
+                withContent={true}
               />
             </div>
           ))}
-          {/* {cabinetFake.map((cabinet) => (
             <div
-              key={cabinet.id}
-              className="flex-shrink-0" // Prevent shrinking
+              key={"add"}
+              className="flex-shrink-0" 
               style={{
-                flexBasis: calculateFlexBasis(), // Dynamically adjust based on screen size
+                flexBasis: calculateFlexBasis(),
               }}
             >
               <CabinetCard
-                id={cabinet.id}
-                name={cabinet.name}
-                status={cabinet.status}
-                errors={cabinet.errors}
-                isError={cabinet.isError}
+                id={""}
+                name={""}
+                status={""}
+                errors={""}
+                isError={""}
                 handleClickDetail={handleClickDetail}
                 height={500}
                 width={300}
+                withContent={false}
               />
             </div>
-          ))} */}
         </div>
       </main>
 
       <div className={`absolute ${isMobile ? 'bottom-6 right-6' :'bottom-10 right-10'}`}>
         <Card className="p-4">
-          {/* Icon đầu: Operate */}
           <div className="flex items-center mb-4">
             <div
               className="p-2 flex items-center justify-center rounded-lg w-[40px] h-[40px] mr-4"
@@ -266,7 +389,6 @@ const Data = () => {
             <span className="text-gray-700 text-sm font-medium">Operating</span>
           </div>
 
-          {/* Icon dưới: Close */}
           <div className="flex items-center">
             <div
               className="p-2 flex items-center justify-center rounded-lg w-[40px] h-[40px] mr-4"

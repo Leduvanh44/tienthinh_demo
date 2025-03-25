@@ -1,16 +1,19 @@
 import { AuthForm } from '../Auth'
-import Sidebar from '../../components/Layout/components/Sidebar'
+import Sidebar from '../../components/Layout/components/Sidebar';
 import React, { useState, useEffect} from 'react';
 import ErrorNotification from "@/components/ErrorNotification/ErrorNotification";
 import { FaTimes } from "react-icons/fa";
 import TableCustomErr from '../../components/TableCustom/TableCustomErr';
-import Button from "@/components/Button"
-import Card from "@/components/Card"
-import DateTimeInput from "@/components/DateTimeInput"
-import SelectInput from "@/components/SelectInput"
+import Button from "@/components/Button";
+import Card from "@/components/Card";
+import DateTimeInput from "@/components/DateTimeInput";
+import SelectInput from "@/components/SelectInput";
 import Loading from "../../components/Layout/components/Loading/Loading";
 import { toast } from "react-toastify";
-import './tracking.less'
+import './tracking.less';
+import { useCallApi } from "@/hooks";
+import {errorApi} from "@/services/api"
+
 const formatDate = (date, time) => {
   const yyyy = date.getFullYear();
   const MM = String(date.getMonth() + 1).padStart(2, "0");
@@ -59,6 +62,7 @@ const ErrorHistoryNotifications = () => {
     }
   ]);
   const [isMobile, setIsMobile] = useState(false);
+  const callApi = useCallApi()
 
   useEffect(() => {
     // console.log(window.innerWidth, window.innerHeight)
@@ -137,6 +141,112 @@ const ErrorHistoryNotifications = () => {
     return endDate > startDate;
   }
 
+  const groupDataByTime = (data) => {
+    const result = [];
+    let currentGroup = [data[0]];
+  
+    for (let i = 1; i < data.length; i++) {
+      const current = data[i];
+      const previous = currentGroup[currentGroup.length - 1];
+  
+      // Tính chênh lệch giữa hai timestamp (bằng giây)
+      const diffInSeconds = (new Date(current.timestamp) - new Date(previous.timestamp)) / 1000;
+      
+      // Kiểm tra chênh lệch timestamp nhỏ hơn 1 phút và số lượng descriptions giống nhau
+      if (diffInSeconds < 2*60 && current.descriptions.length === previous.descriptions.length) {
+        currentGroup.push(current);  // Gom lại nếu thỏa mãn cả hai điều kiện
+      } else {
+        // Nếu không thỏa mãn, lưu nhóm hiện tại và bắt đầu nhóm mới
+        result.push(groupAndTime(currentGroup));
+        currentGroup = [current];  // Bắt đầu nhóm mới với phần tử hiện tại
+      }
+    }
+  
+    // Nếu còn nhóm chưa được lưu (nhóm cuối)
+    if (currentGroup.length > 0) {
+      result.push(groupAndTime(currentGroup));
+    }
+  
+    return result;
+  };
+  
+  const groupAndTime = (group) => {
+    const startTimeStamp = group[0].timestamp;
+    let endTimeStamp = group[group.length - 1].timestamp;
+  
+    // Nếu nhóm chỉ có một phần tử, tăng thêm 30 giây cho endTimeStamp
+    if (group.length === 1) {
+      const timestamp = new Date(startTimeStamp);
+      timestamp.setSeconds(timestamp.getSeconds() + 30);
+      
+      const pad = (num, size = 2) => num.toString().padStart(size, '0');
+      const formattedDate = `${timestamp.getFullYear()}-${pad(timestamp.getMonth() + 1)}-${pad(timestamp.getDate())}T${pad(timestamp.getHours())}:${pad(timestamp.getMinutes())}:${pad(timestamp.getSeconds())}.${timestamp.getMilliseconds().toString().padStart(3, '0')}`;
+      
+      endTimeStamp = formattedDate;
+    }
+  
+    return {
+      name: group[0].name,
+      errorId: group[0].errorId,
+      startTimeStamp,
+      endTimeStamp,
+      descriptions: group[0].descriptions  // Chỉ giữ descriptions của đối tượng đầu tiên
+    };
+  };
+  
+  const GroupAndTime = (finalGroupedData) => {
+    const groupedResults = [];
+    let i = 0;
+  
+    while (i < finalGroupedData.length) {
+      const currentGroup = [];
+      let j = i;
+  
+      while (
+        j < finalGroupedData.length &&
+        (currentGroup.length === 0 || (
+          new Date(finalGroupedData[j].timestamp) - new Date(currentGroup[currentGroup.length - 1].timestamp) <= 60000 &&
+          finalGroupedData[j].descriptions.length === currentGroup[0].descriptions.length
+        ))
+      ) {
+        currentGroup.push(finalGroupedData[j]);
+        j++;
+      }
+  
+      if (currentGroup.length > 0) {
+        const startTimeStamp = currentGroup[0].timestamp;
+        // const endTimeStamp =
+        //   currentGroup.length > 1
+        //     ? currentGroup[currentGroup.length - 1].timestamp
+        //     : new Date(new Date(startTimeStamp).getTime() + 30000).toISOString().replace('Z', '');
+        let endTimeStamp = currentGroup[currentGroup.length - 1].timestamp;
+
+        if (currentGroup.length === 1) {
+          const timestamp = new Date(startTimeStamp);
+          timestamp.setSeconds(timestamp.getSeconds() + 10);
+          const pad = (num, size = 2) => num.toString().padStart(size, '0');
+          const formattedDate = `${timestamp.getFullYear()}-${pad(timestamp.getMonth() + 1)}-${pad(timestamp.getDate())}T${pad(timestamp.getHours())}:${pad(timestamp.getMinutes())}:${pad(timestamp.getSeconds())}.${timestamp.getMilliseconds().toString().padStart(3, '0')}`;
+          
+          endTimeStamp = formattedDate;
+        }
+
+            
+        groupedResults.push({
+          name: currentGroup[0].name,
+          descriptions: currentGroup[0].descriptions, // Giữ descriptions của object đầu tiên
+          errorId: currentGroup[0].errorId,
+          startTimeStamp,
+          endTimeStamp,
+        });
+      }
+  
+      // Cập nhật i để tiếp tục xử lý các object còn lại
+      i = j;
+    }
+  
+    return groupedResults;
+  }
+
   const handleSearchErrHistory = async (CabinetId, StartAt, EndAt) => {
     if ((!isDayEndAfterDayStart(StartAt, EndAt))) {
       toast.error("Thời gian bắt đầu phải trước thời gian kết thúc");
@@ -144,18 +254,88 @@ const ErrorHistoryNotifications = () => {
     }
     setLoading(true);
     try {
-      const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Errors?StartTime=${StartAt === "NaN-NaN-NaNTNaN:NaN:NaN" ? "" : StartAt.replace("T", " ")}&EndTime=${EndAt === "NaN-NaN-NaNTNaN:NaN:NaN" ? "" :EndAt.replace("T", " ")}&CabinetId=${CabinetId[0]===undefined ? "" : CabinetId[0]}`;
-      console.log("Fetching data from URL:", url); 
-      const response = await fetch(url, { method: "GET" });
-      if (!response.ok) {
-        throw new Error(`Failed to fetch data: ${response.statusText}`);
-      }
-      const data = await response.json();
-      console.log("Data received:", data);
-      const sortedData = data.sort((a, b) => new Date(a.timeStamp) - new Date(b.timeStamp));
-      console.log("Sorted Data:", sortedData);
-      setSearchErrHistory(sortedData);
-      setShowDownloads(true);
+      // const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Errors?StartTime=${StartAt === "NaN-NaN-NaNTNaN:NaN:NaN" ? "" : StartAt.replace("T", " ")}&EndTime=${EndAt === "NaN-NaN-NaNTNaN:NaN:NaN" ? "" :EndAt.replace("T", " ")}&CabinetId=${CabinetId[0]===undefined ? "" : CabinetId[0]}`;
+      // console.log("Fetching data from URL:", url); 
+      // const response = await fetch(url, { method: "GET" });
+      // if (!response.ok) {
+      //   throw new Error(`Failed to fetch data: ${response.statusText}`);
+      // }
+      // const data = await response.json();
+      // console.log("Data received:", data);
+    callApi(
+      () => errorApi.getError(CabinetId, StartAt, EndAt),
+          (data) => {
+            console.log("Data:", data);
+            const sortedData = data.sort((a, b) => new Date(a.timeStamp) - new Date(b.timeStamp));
+            console.log("Sorted Data:", sortedData);
+            if (sortedData.length !== 0) {
+              const groupedData = [];
+              let tempGroup = [sortedData[0]];
+              for (let i = 1; i < sortedData.length; i++) {
+                const prevTimestamp = new Date(sortedData[i - 1].timeStamp);
+                const currentTimestamp = new Date(sortedData[i].timeStamp);
+                const timeDiff = (currentTimestamp - prevTimestamp) / 1000; 
+          
+                if (timeDiff <= 20) {
+                  tempGroup.push(sortedData[i]);
+                } else {
+                  groupedData.push(tempGroup);
+                  tempGroup = [sortedData[i]]; 
+                }
+              }
+              if (tempGroup.length > 0) {
+                groupedData.push(tempGroup);
+              }
+              console.log("Grouped Data:", groupedData);
+      
+              const devicesToGroup = [
+                "Nhiệt ủ mềm", "Nhiệt đầu vào", "Nhiệt tuần hoàn", "After", "Nhiệt đầu ra", "Before", "Nhiệt trung tâm"
+              ];
+        
+              const finalGroupedData = [];
+              let currentGroup = [];
+      
+              groupedData.forEach(group => {
+                group.forEach(item => {
+                  const deviceMatched = devicesToGroup.some(device => item.description.includes(device));            
+                  if (deviceMatched) {
+                    currentGroup.push(item.description);
+                  }
+              
+                  if (currentGroup.length === 7) {
+                    finalGroupedData.push({
+                      name: group[0].name,  
+                      timestamp: group[0].timeStamp, 
+                      errorId: group[0].errorId,  
+                      descriptions: [...currentGroup]
+                    });
+                    currentGroup = [];
+                  };
+                });
+                if (currentGroup.length > 0) {
+                  finalGroupedData.push({
+                    name: group[0].name,
+                    timestamp: group[0].timeStamp,
+                    errorId: group[0].errorId,
+                    descriptions: [...currentGroup]
+                  });
+                  currentGroup = [];
+                }
+              }
+              );
+              console.log("finalGroupedData: ", finalGroupedData)
+              console.log(GroupAndTime(finalGroupedData))
+              const finalData = GroupAndTime(finalGroupedData).sort((a, b) => new Date(b.startTimeStamp) - new Date(a.startTimeStamp));
+              setSearchErrHistory(finalData);
+            }
+            else {
+              toast.error(`Error: No data found`);
+              setSearchErrHistory(data);
+            }
+            setShowDownloads(true);
+          },
+    )
+
     } catch (error) {
       console.error("Error fetching report data:", error);
       toast.error(`Error: ${error.message}`);

@@ -13,7 +13,6 @@ function DateTimeInput({ id, label, value, setValue, className, type, timeCompar
         return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}T${time}`;
     }; 
     const [inputDateTime, setInputDateTime] = useState(convertToDate(value))
-    console.log(inputDateTime)
     const handleFocus = () => {
         setFocus(true)
     }
