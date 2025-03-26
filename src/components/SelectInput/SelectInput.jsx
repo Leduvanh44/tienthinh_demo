@@ -166,6 +166,7 @@ function SelectInput({
                         />
                     )}
                 </div>
+                
                 <i className="absolute right-3 bottom-1">
                     <MdOutlineKeyboardArrowDown className={cl("text-2xl transition-all", { "rotate-180": focus })} />
                 </i>

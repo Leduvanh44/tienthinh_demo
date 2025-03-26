@@ -1,21 +1,21 @@
 import React, { useEffect, useState, useCallback, useRef} from 'react';
 import Sidebar from '../../components/Layout/components/Sidebar'
-import { FaThermometerHalf, FaFan, FaExclamationTriangle } from "react-icons/fa";
 import Card from "@/components/Card"
 import TableCustom from "@/components/TableCustom"
-import { useNavigate } from "react-router-dom"
 import DateTimeInput from "@/components/DateTimeInput"
 import TextInput from "@/components/TextInput"
 import SelectInput from "@/components/SelectInput"
 import Button from "@/components/Button"
 import { useCallApi } from "@/hooks"
-import { CabinetsApi } from "../../services/api"
+import { CabinetsApi, shotApi} from "../../services/api"
 import { toast } from "react-toastify";
 import Loading from "../../components/Layout/components/Loading/Loading";
 import ReactApexChart from "react-apexcharts";
+import hubConnection from "@/services/signalr/productionProgress/hubConnection"
 import ToggleButtons from "@/components/ToggleButtons"
 import './pov.less'
 import dayjs from 'dayjs';
+
 const formatDate = (date, time) => {
   const yyyy = date.getFullYear();
   const MM = String(date.getMonth() + 1).padStart(2, "0");
@@ -34,23 +34,10 @@ const initialDayStart = formatDate(threeDaysAgo, startTime);
 const initialDayEnd = formatDate(now, endTime);              
 const initialDayWOStart = formatDate(threeDaysAgo, startTime); 
 const initialDayWOEnd = formatDate(now, endTime); 
+
 const POV = () => {
   const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => {
-      console.log(window.innerWidth, window.innerHeight)
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
+  const [connection, setConnection] = useState()
   const [dayStart, setDayStart] = useState(initialDayStart);
   const [dayEnd, setDayEnd] = useState(initialDayEnd);
   const [dayWOStart, setDayWOStart] = useState(initialDayWOStart);
@@ -72,41 +59,171 @@ const POV = () => {
   const chartTemp1Ref = useRef(null);
   const chartTemp2Ref = useRef(null);
   const chartFanRef = useRef(null);
+  const [setPoint, setSetPoint] = useState([]);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      // console.log(window.innerWidth, window.innerHeight)
+      setIsMobile(window.innerWidth <= 768);
+    };
 
-  // const allData = reportData.map(d => d[devices[9]]);
+    handleResize();
+    window.addEventListener("resize", handleResize);
 
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+  useEffect(() => {
+    hubConnection.start().then((connection) => {
+        setConnection(connection)
+    })
+    }, [])
+
+  const handleZoomSync = (chartId, newRange) => {
+    // console.log("Zoom triggered on chart:", chartId);
+    // console.log("New range:", newRange);
+    // console.log(chartTemp2Ref)
+    // console.log(chartTemp2Ref.current.props.options.xaxis)
+    // console.log(chartFanRef.current.props.options.xaxis)
+    const charts = [
+      { id: "tempchart1", ref: chartTemp1Ref },
+      { id: "tempchart2", ref: chartTemp2Ref },
+      { id: "fanchart", ref: chartFanRef },
+    ];
+    charts.forEach(({ id, ref }) => {
+      if (id !== chartId) { 
+        ref.current.chart.updateOptions({
+          xaxis: {
+            categories: (reportData.map(d => d.timestamp)),
+            type: "category",
+            title: {
+              text: "Time",
+              align: "left",
+              style: {
+                fontSize: isMobile ? '12px': '16px', 
+                fontWeight: 'bold', 
+                fontFamily: 'Roboto', 
+                color: '#333',
+              }
+            },
+            min: newRange.min,
+            max: newRange.max,
+          },
+        });
+      }
+    });
+  };
   const getDeviceList = useCallback(() => {
     callApi(
-        () => CabinetsApi.Cabinets.getDevices(),
+        () => CabinetsApi.Cabinets.getDevices(""),
         (data) => {
           setDevices(data.map(item => item.deviceId))
           setDeviceNames(data.map(item => item.name))            
         },
     )
   }, [callApi])
+
   useEffect(() => {
       getDeviceList()
   }, [getDeviceList])
 
-//   const getTimestamps = (timestamps) => {
-//     const first = timestamps[0];
-//     const last = timestamps[timestamps.length - 1];
-//     const middle = timestamps[Math.floor(timestamps.length / 2)];
+  const tempChart1Series = [
+    {
+      name: deviceNames[9],
+      data: reportData.map(d => d[devices[9]].value)
+    },
+    {
+      name: `${deviceNames[9]} cài đặt`,
+      data: reportData.map(d => d[devices[9]].setValue)
+    },
+    {
+      name: deviceNames[10],
+      data: reportData.map(d => d[devices[10]].value)
+    },
+    {
+      name: `${deviceNames[10]} cài đặt`,
+      data: reportData.map(d => d[devices[10]].setValue)
+    },
+    {
+      name: deviceNames[11],
+      data: reportData.map(d => d[devices[11]].value)
+    },
+    {
+      name: `${deviceNames[11]} cài đặt`,
+      data: reportData.map(d => d[devices[11]].setValue)
+    },
 
-//     return timestamps.map((timestamp, index) => {
-//         if (timestamp === first || timestamp === middle || timestamp === last) {
-//             return timestamp;
-//         }
-//         return ''; 
-//     });
-// };
+  ];
 
-const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
+  const tempChart2Series = [
+    {
+      name: deviceNames[5],
+      data: reportData.map(d => d[devices[5]].value)
+    },
+    {
+      name: `${deviceNames[5]} cài đặt`,
+      data: reportData.map(d => d[devices[5]].setValue)
+    },
+    {
+      name: deviceNames[6],
+      data: reportData.map(d => d[devices[6]].value)
+    },
+    {
+      name: `${deviceNames[6]} cài đặt`,
+      data: reportData.map(d => d[devices[6]].setValue)
+    },
+    {
+      name: deviceNames[7],
+      data: reportData.map(d => d[devices[7]].value)
+    },
+    {
+      name: `${deviceNames[7]} cài đặt`,
+      data: reportData.map(d => d[devices[7]].setValue)
+    },
+    {
+      name: deviceNames[8],
+      data: reportData.map(d => d[devices[8]].value)
+    },
+    {
+      name: `${deviceNames[8]} cài đặt`,
+      data: reportData.map(d => d[devices[8]].setValue)
+    }
+  ];
 
+
+  const fanChartSeries = [
+    {
+      name: deviceNames[0],
+      data: reportData.map(d => d[devices[0]]).map(item => item?.value ?? null)
+    },
+    {
+      name: `${deviceNames[0]} ngưỡng cho phép`,
+      data: Array(reportData.map(d => d[devices[0]].value).length).fill(2100)
+    },
+    {
+      name: deviceNames[3],
+      data: reportData.map(d => d[devices[3]]).map(item => item?.value ?? null)
+    },
+    {
+      name: `${deviceNames[3]} ngưỡng cho phép`,
+      data: Array(reportData.map(d => d[devices[0]].value).length).fill(2600)
+    },
+    {
+      name: deviceNames[4],
+      data: reportData.map(d => d[devices[4]]).map(item => item?.value ?? null)
+    },
+    {
+      name: `${deviceNames[4]} ngưỡng cho phép`,
+      data: Array(reportData.map(d => d[devices[0]].value).length).fill(2600)
+    },      
+  ];
 
   const tempChart1Options = {
     chart: {
       type: "line",
+      id: "tempchart1",
+      // group: "sync",
       toolbar: {
         show: true, 
         tools: {
@@ -114,16 +231,25 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
         }
       },
       zoom: {
-        enabled: true
-      }
+        enabled: true,
+        type: "x"
+      },
+      events: {
+        zoomed: function (chartContext, { xaxis }) {
+          handleZoomSync("tempchart1", xaxis);
+        },
+      },
     },
-    colors: ["#FF4560", "#00E396", "#008FFB"],  
+    colors: ["#e60000", "#fc8482", "#36ac2b", "#a7ff9f", "#1344d1", "#a6c6ff", "#3f1a91", "#c9b4f6"],
     dataLabels: {
       enabled: false
     },
     stroke: {
       curve: "smooth",
-      width: 2
+      width: 2,
+      dashArray: Array(tempChart1Series.length)
+      .fill(0)
+      .map((_, index) => (index % 2 === 0 ? 0 : 5))
     },
     title: {
       text: `Nhiệt độ đạt được của 3 thiết bị tủ ${cabinetId.length === 0 ? "MD08" : cabinetId[0]}`,
@@ -154,15 +280,7 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
     },
     xaxis: {
       categories: (reportData.map(d => d.timestamp)),
-      // labels: {
-      //     formatter: (value, index) => {
-      //         const timestamps = reportData.map(d => d.timestamp);
-      //         if (index === 0 || index === Math.floor(timestamps.length / 2) || index === timestamps.length - 1) {
-      //             return value;
-      //         }
-      //         return ''; 
-      //     }
-      // },
+      type: "category",
       title: {
         text: "Time",
         align: "left",
@@ -174,7 +292,6 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
         }
       }
     },
-
     yaxis: {
       min: 0,
       title: {
@@ -208,7 +325,14 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
           tooltipContent += `
             <div>
               <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${item.color}; margin-right: 8px;"></span>
-              <strong>${item.name}:</strong> ${item.value===null ? "Không có dữ liệu" : item.value.toFixed(2)} °C
+              <strong>${item.name}:</strong> 
+              ${item.value === null 
+                  ? "Không có dữ liệu" 
+                  : (item.value === -1 
+                      ? "Thiết bị đã bị tắt" 
+                      : item.value.toFixed(2) + " °C"
+                  )
+              }            
             </div>
           `;
         });
@@ -223,10 +347,28 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
     //   }
     // }
   };
-  
+
   const tempChart2Options = {
-    ...tempChart1Options,
-    colors: ["#FF4560", "#00E396", "#008FFB", "#775DD0"],
+    chart: {
+      type: "line",
+      id: "tempchart2",
+      toolbar: {
+        show: true, 
+        tools: {
+          download: false 
+        }
+      },
+      zoom: {
+        enabled: true,
+        type: "x"
+      },
+      events: {
+        zoomed: function (chartContext, { xaxis }) {
+          handleZoomSync("tempchart2", xaxis);
+        },
+      },
+    },
+    colors: ["#e60000", "#fc8482", "#36ac2b", "#a7ff9f", "#1344d1", "#a6c6ff", "#3f1a91", "#c9b4f6"],
     title: {
       text: `Nhiệt độ đạt được của 4 thiết bị tủ ${cabinetId.length === 0 ? "MD08" : cabinetId[0]}`,
       align: "left",
@@ -246,11 +388,130 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
         fontFamily: 'Roboto', 
         color: '#333',
       }
+    },
+    xaxis: {
+      categories: (reportData.map(d => d.timestamp)),
+      type: "category",
+      labels: {
+        format: "dd-MM-yyyy HH:mm",
+      },
+      // tickAmount: reportData.map(d => d.timestamp).length-2,
+      title: {
+        text: "Time",
+        align: "left",
+        style: {
+          fontSize: isMobile ? '12px': '16px', 
+          fontWeight: 'bold', 
+          fontFamily: 'Roboto', 
+          color: '#333',
+        }
+      }
+    },
+    dataLabels: {
+      enabled: false
+    },
+    stroke: {
+      curve: "smooth",
+      width: 2,
+      dashArray: Array(tempChart1Series.length)
+      .fill(0)
+      .map((_, index) => (index % 2 === 0 ? 0 : 5))
+    },
+    grid: {
+      borderColor: "#e7e7e7",
+      row: {
+        colors: ["#f3f3f3", "transparent"],
+        opacity: 0.5
+      }
+    },
+    yaxis: {
+      min: 0,
+      title: {
+        text: "Temperature (°C)",
+        style: {
+          fontSize: isMobile ? '12px': '16px', 
+          fontWeight: 'bold', 
+          fontFamily: 'Roboto', 
+          color: '#333',
+        }
+      }
+    },
+    legend: {
+      position: "top"
+    },
+    tooltip: {
+      enabled: true,
+      custom: function({ series, seriesIndex, dataPointIndex, w }) {
+        let tooltipContent = "<div style='padding: 10px;'>";
+        
+        let seriesData = w.config.series.map((seriesItem, index) => {
+          return {
+            name: seriesItem.name,
+            value: series[index][dataPointIndex],
+            color: w.config.colors[index]
+          };
+        });
+        seriesData.sort((a, b) => b.value - a.value);
+        
+        seriesData.forEach(item => {
+          tooltipContent += `
+            <div>
+              <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${item.color}; margin-right: 8px;"></span>
+              <strong>${item.name}:</strong> 
+              ${item.value === null 
+                  ? "Không có dữ liệu" 
+                  : (item.value === -1 
+                      ? "Thiết bị đã bị tắt" 
+                      : item.value.toFixed(2) + " °C"
+                  )
+              }            
+            </div>
+          `;
+        });
+  
+        tooltipContent += "</div>";
+        return tooltipContent;
+      }
     }
+      // toolbar: {
+      //   export: {
+      //     png: `${cabinetId[0]}-${dayWOStart}${dayWOEnd}.png`
+      //   }
+      // }
   };
 
   const fanChartOptions = {
-    ...tempChart1Options,
+    chart: {
+      type: "line",
+      id: "fanchart",
+      // group: "sync",
+      toolbar: {
+        show: true, 
+        tools: {
+          download: false 
+        }
+      },
+      zoom: {
+        enabled: true,
+        type: "x"
+      },
+      events: {
+        zoomed: function (chartContext, { xaxis }) {
+          handleZoomSync("fanchart", xaxis);
+        },
+      },
+    },
+    colors: ["#e60000", "#fc8482", "#36ac2b", "#a7ff9f", "#1344d1", "#a6c6ff", "#3f1a91", "#c9b4f6"],
+    dataLabels: {
+      enabled: false
+    },
+    stroke: {
+      curve: "smooth",
+      width: 2,
+      dashArray: Array(fanChartSeries.length)
+      .fill(0)
+      .map((_, index) => (index % 2 === 0 ? 0 : 5))
+    },
     title: {
       text: `Tốc độ quạt đạt được của 3 thiết bị tủ ${cabinetId.length === 0 ? "MD08" : cabinetId[0]}`,
       align: "left",
@@ -271,6 +532,20 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
         color: '#333',
       }
     },
+    xaxis: {
+      categories: (reportData.map(d => d.timestamp)),
+      type: "category",
+      title: {
+        text: "Time",
+        align: "left",
+        style: {
+          fontSize: isMobile ? '12px': '16px', 
+          fontWeight: 'bold', 
+          fontFamily: 'Roboto', 
+          color: '#333',
+        }
+      }
+    },
     yaxis: {
       title: {
         text: "Speed (RPM)",
@@ -281,57 +556,38 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
           color: '#333',
         }
       }
+    },
+    legend: {
+      position: "top",
+    },
+    tooltip: {
+      enabled: true,
+      custom: function({ series, seriesIndex, dataPointIndex, w }) {
+        let tooltipContent = "<div style='padding: 10px;'>";
+        
+        let seriesData = w.config.series.map((seriesItem, index) => {
+          return {
+            name: seriesItem.name,
+            value: series[index][dataPointIndex],
+            color: w.config.colors[index]
+          };
+        });
+        seriesData.sort((a, b) => b.value - a.value);
+        
+        seriesData.forEach(item => {
+          tooltipContent += `
+            <div>
+              <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${item.color}; margin-right: 8px;"></span>
+              <strong>${item.name}:</strong> ${item.value===null ? "Không có dữ liệu" : item.value.toFixed(2)} RPM
+            </div>
+          `;
+        });
+  
+        tooltipContent += "</div>";
+        return tooltipContent;
+      }
     }
   };
-
-  const tempChart1Series = [
-    {
-      name: deviceNames[9],
-      data: reportData.map(d => d[devices[9]])
-    },
-    {
-      name: deviceNames[10],
-      data: reportData.map(d => d[devices[10]])
-    },
-    {
-      name: deviceNames[11],
-      data: reportData.map(d => d[devices[11]])
-    }
-  ];
-
-  const tempChart2Series = [
-    {
-      name: deviceNames[5],
-      data: reportData.map(d => d[devices[5]])
-    },
-    {
-      name: deviceNames[6],
-      data: reportData.map(d => d[devices[6]])
-    },
-    {
-      name: deviceNames[7],
-      data: reportData.map(d => d[devices[7]])
-    },
-    {
-      name: deviceNames[8],
-      data: reportData.map(d => d[devices[8]])
-    }
-  ];
-
-  const fanChartSeries = [
-    {
-      name: deviceNames[0],
-      data: reportData.map(d => d[devices[0]])
-    },
-    {
-      name: deviceNames[3],
-      data: reportData.map(d => d[devices[3]])
-    },
-    {
-      name: deviceNames[4],
-      data: reportData.map(d => d[devices[4]])
-    }
-  ];
 
   const isDayEndAfterDayStart = (dayStart, dayEnd) => {
     const convertToISO = (dateStr) => {
@@ -346,25 +602,10 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
   }
 
   const handleDownload = async (row) => {
-    console.log("Downloading item:", row);
     setLoading(true);
     try {
-        const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Cabinets/Export?CabinetId=${cabinetId[0]}&WorkOrder=${row.workOrder}&Customer=${row.customer}&Enamel=${row.enamel}&Size=${row.size}&StartTime=${row.startAt.replace("T", " ")}&EndTime=${row.endAt.replace("T", " ")}&StartAt=${row.startAt.replace("T", " ")}&EndAt=${row.endAt.replace("T", " ")}`;
-        // console.log(url);
-        const getResponse = await fetch(url, { method: "GET" });
-        if (getResponse.ok) {
-            const blob = await getResponse.blob();
-            const downloadUrl = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = downloadUrl;
-            a.download = "TienThinh-old-report.xlsx";
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            toast.success("Xuất tệp Excel thành công!");
-        } else {
-            throw new Error("Không thể xuất tệp Excel, vui lòng thử lại.");
-        }
+      await CabinetsApi.Cabinets.getExport(cabinetId[0], row.workOrder, row.customer, row.enamel, row.size, row.startAt, row.endAt);
+      // link = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Cabinets/Export?CabinetId=${cabinetId[0]}&WorkOrder=${row.workOrder}&Customer=${row.customer}&Enamel=${row.enamel}&Size=${row.size}&StartTime=${row.startAt.replace("T", " ")}&EndTime=${row.endAt.replace("T", " ")}&StartAt=${row.startAt.replace("T", " ")}&EndAt=${row.endAt.replace("T", " ")}`;
     } catch (error) {
         toast.error(error.message);
     } finally {
@@ -392,9 +633,11 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
 
     const lastValues = {};
 
+    // Khởi tạo lastValues cho mỗi thiết bị với object mặc định
     allDeviceIds.forEach(deviceId => {
-        lastValues[deviceId] = null;
+        lastValues[deviceId] = { value: 0, setValue: 0 };
     });
+
     const formattedData = allTimestamps.map(timestamp => {
         const result = { timestamp };
 
@@ -404,10 +647,13 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
             );
 
             if (matchingData) {
-                result[deviceId] = matchingData.value;
-                lastValues[deviceId] = matchingData.value; // Cập nhật giá trị gần nhất
+                result[deviceId] = {
+                    value: matchingData.value,
+                    setValue: matchingData.setValue,
+                };
+                lastValues[deviceId] = result[deviceId]; // Cập nhật giá trị gần nhất
             } else {
-                result[deviceId] = lastValues[deviceId] !== null ? lastValues[deviceId] : 0; // Dùng giá trị gần nhất hoặc 0
+                result[deviceId] = lastValues[deviceId]; // Dùng giá trị gần nhất
             }
         });
 
@@ -415,26 +661,23 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
     });
 
     return formattedData;
-  };
+};
 
-  function convertToISOFormat(dateTime) {
-    // Kiểm tra nếu chuỗi đầu vào không hợp lệ
+
+  const convertToISOFormat= (dateTime) => {
     if (!dateTime || typeof dateTime !== "string") {
-      console.error("Dữ liệu đầu vào không hợp lệ:", dateTime);
+      // console.error("Dữ liệu đầu vào không hợp lệ:", dateTime);
       return null;
     }
   
-    // Tách các thành phần từ định dạng MM-DD-YYYYTHH:mm:ss
     const match = dateTime.match(/^(\d{2})-(\d{2})-(\d{4})T(\d{2}):(\d{2}):(\d{2})$/);
     if (!match) {
-      console.error("Định dạng ngày giờ không hợp lệ:", dateTime);
+      // console.error("Định dạng ngày giờ không hợp lệ:", dateTime);
       return null;
     }
   
-    // Lấy các thành phần (tháng, ngày, năm, giờ, phút, giây)
     const [, month, day, year, hour, minute, second] = match;
   
-    // Trả về chuỗi định dạng ISO-8601
     return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
   }
 
@@ -453,96 +696,268 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
     }
     setLoading(true);
     if (!Array.isArray(devices)) {
-      console.log("error array")
-      console.log(devices)
+      toast.error("Không có thiết bị nào");
+      // console.log("error array")
+      // console.log(devices)
     }
     try {
-      const fetchPromises = devices.map(async deviceId => {
-        const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Shots?DeviceId=${deviceId}&StartTime=${startTime.replace("T", " ")}&EndTime=${endTime.replace("T", " ")}`;
-        // console.log(url);
-        const response = await fetch(url, { method: "GET" });
-        if (!response.ok) {
-            throw new Error(`Failed to fetch data for DeviceId: ${deviceId}`);
-        }
-        return response.json();
-    });
-      const results = await Promise.all(fetchPromises);
-      let combinedData = results.flat(); 
-      combinedData = convertData(combinedData);
-      // console.log(combinedData)
-      combinedData = combinedData.map(item => {
-        const keysToCheck = [
-            "MD8/HeatController/0",
-            "MD8/HeatController/1",
-            "MD8/HeatController/2",
-            "MD8/HeatController/3",
-            "MD8/HeatController/4",
-            "MD8/HeatController/5",
-            "MD8/HeatController/6"
-        ];
-        
-        keysToCheck.forEach(key => {
-            if (item[key] === -1) {
-                item[key] = null;
-            }
-        });
-
-        return item;
-    });
-
-      const uniqueTimestamps = {};
-      let filtered = combinedData.filter(item => {
-        const minuteTimestamp = item.timestamp.slice(0, 16);
-        const minute = parseInt(item.timestamp.slice(14, 16), 10);
-        //minute % 5 === 0 &&
-        if (!uniqueTimestamps[minuteTimestamp]  ) {
-          uniqueTimestamps[minuteTimestamp] = true;
-          return true;
-        }
-        return false;
-      });
-      const updateTimeStamp = filtered.map(item => ({
-        ...item,
-        timestamp: item.timestamp.slice(0, 16)
-      }));
-      // console.log(updateTimeStamp)
-      
-      const allTimestamps = [];
-      let current = dayjs(convertToISOFormat(startTime));
-      const end = dayjs(convertToISOFormat(endTime));
-      // console.log("allTimestamps: ", current, end)
-
-      while (current.isBefore(end) || current.isSame(end)) {
-        allTimestamps.push(current.format("YYYY-MM-DDTHH:mm")); 
-        current = current.add(30, 'minute'); 
-      }
-      // console.log("allTimestamps: ", allTimestamps)
-      const existingTimestamps = new Set(updateTimeStamp.map(item => item.timestamp));
-    
-      const missingData = allTimestamps
-        .filter(timestamp => !existingTimestamps.has(timestamp))
-        .map(timestamp => ({
-          timestamp,
-          "MD8/FanInverter/0": null,
-          "MD8/FanInverter/1": null,
-          "MD8/FanInverter/2": null,
-          "MD8/FanInverter/3": null,
-          "MD8/FanInverter/4": null,
-          "MD8/HeatController/0": null,
-          "MD8/HeatController/1": null,
-          "MD8/HeatController/2": null,
-          "MD8/HeatController/3": null,
-          "MD8/HeatController/4": null,
-          "MD8/HeatController/5": null,
-          "MD8/HeatController/6": null
-        }));
-    
-      const updatedReportData = [...updateTimeStamp, ...missingData].sort((a, b) =>
-        a.timestamp.localeCompare(b.timestamp)
+      let stack = [];
+      const apiCalls = devices.map((deviceId) =>
+          new Promise((resolve) => {
+              callApi(
+                  () => shotApi.getShot(deviceId, startTime, endTime),
+                  (data) => {
+                      if (Array.isArray(data)) {
+                          // console.log(data);
+                          resolve(data);
+                      } else {
+                          toast.error("Lỗi dữ liệu");
+                          // console.error("Dữ liệu không phải mảng:", data);
+                          resolve([]);
+                      }
+                  }
+              );
+          })
       );
+      
+      Promise.all(apiCalls).then((results) => {
+          stack = results.flat();
+          const combineData = convertData(stack);
 
-      setReportData(updatedReportData);
-    } catch (error) {
+          const generateEmptyObject = (keys) => {
+            const emptyObject = {};
+            keys.forEach(key => {
+                emptyObject[key] = { value: null, setValue: null };
+            });
+            return emptyObject;
+          };
+        
+        const combinedData = combineData.map(item => {
+            const keysToCheck = [
+                "MD08/HeatController/0",
+                "MD08/HeatController/1",
+                "MD08/HeatController/2",
+                "MD08/HeatController/3",
+                "MD08/HeatController/4",
+                "MD08/HeatController/5",
+                "MD08/HeatController/6"
+            ];
+        
+            keysToCheck.forEach(key => {
+                if (item[key] === -1) {
+                    item[key] = { value: null, setValue: null };
+                }
+            });
+        
+            return item;
+        });
+        
+        const uniqueTimestamps = {};
+        let filtered = combinedData.filter(item => {
+            const minuteTimestamp = item.timestamp.slice(0, 16);
+            const minute = parseInt(item.timestamp.slice(14, 16), 10);
+            if (!uniqueTimestamps[minuteTimestamp]) {
+                uniqueTimestamps[minuteTimestamp] = true;
+                return true;
+            }
+            return false;
+        });
+        const updateTimeStamp = filtered.map(item => ({
+            ...item,
+            timestamp: item.timestamp.slice(0, 16)
+        }));
+        
+        const addMissingTimestamps = (updateTimeStamp, startTime, endTime) => {
+            const formattedStartTime = dayjs(convertToISOFormat(startTime)).format("YYYY-MM-DDTHH:mm");
+            const formattedEndTime = dayjs(convertToISOFormat(endTime)).format("YYYY-MM-DDTHH:mm");
+        
+            const allKeys = [
+                "MD08/FanInverter/0",
+                "MD08/FanInverter/1",
+                "MD08/FanInverter/2",
+                "MD08/FanInverter/3",
+                "MD08/FanInverter/4",
+                "MD08/HeatController/0",
+                "MD08/HeatController/1",
+                "MD08/HeatController/2",
+                "MD08/HeatController/3",
+                "MD08/HeatController/4",
+                "MD08/HeatController/5",
+                "MD08/HeatController/6"
+            ];
+        
+            const startObject = {
+                timestamp: formattedStartTime,
+                ...generateEmptyObject(allKeys)
+            };
+        
+            const endObject = {
+                timestamp: formattedEndTime,
+                ...generateEmptyObject(allKeys)
+            };
+        
+            const updatedTimestamps = [startObject, ...updateTimeStamp];
+        
+            updatedTimestamps.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+        
+            const filledTimestamps = [];
+            for (let i = 0; i < updatedTimestamps.length - 1; i++) {
+                let current = dayjs(updatedTimestamps[i].timestamp);
+                const next = dayjs(updatedTimestamps[i + 1].timestamp);
+        
+                filledTimestamps.push(updatedTimestamps[i]);
+        
+                while (next.diff(current, "minute") > 30) {
+                    const missingTimestamp = current.add(30, "minute").format("YYYY-MM-DDTHH:mm");
+                    filledTimestamps.push({
+                        timestamp: missingTimestamp,
+                        ...generateEmptyObject(allKeys)
+                    });
+                    current = current.add(30, "minute");
+                }
+            }
+        
+            filledTimestamps.push(updatedTimestamps[updatedTimestamps.length - 1]);
+        
+            return filledTimestamps;
+        };
+        
+        const updatedReportData = addMissingTimestamps(updateTimeStamp, startTime, endTime);
+        setReportData(updatedReportData);
+        console.log(updatedReportData)
+
+          
+
+          // const combinedData = combineData.map(item => {
+          //   const keysToCheck = [
+          //       "MD08/HeatController/0",
+          //       "MD08/HeatController/1",
+          //       "MD08/HeatController/2",
+          //       "MD08/HeatController/3",
+          //       "MD08/HeatController/4",
+          //       "MD08/HeatController/5",
+          //       "MD08/HeatController/6"
+          //   ];
+            
+          //   keysToCheck.forEach(key => {
+          //       if (item[key] === -1) {
+          //           item[key] = null;
+          //       }
+          //   });
+    
+          //   return item;
+          // });
+    
+          // const uniqueTimestamps = {};
+          // let filtered = combinedData.filter(item => {
+          //   const minuteTimestamp = item.timestamp.slice(0, 16);
+          //   const minute = parseInt(item.timestamp.slice(14, 16), 10);
+          //   //minute % 5 === 0 &&
+          //   if (!uniqueTimestamps[minuteTimestamp]) {
+          //     uniqueTimestamps[minuteTimestamp] = true;
+          //     return true;
+          //   }
+          //   return false;
+          // });
+          // const updateTimeStamp = filtered.map(item => ({
+          //   ...item,
+          //   timestamp: item.timestamp.slice(0, 16)
+          // }));
+          // // console.log(updateTimeStamp)
+    
+          // const addMissingTimestamps = (updateTimeStamp, startTime, endTime) => {
+          //   const formattedStartTime = dayjs(convertToISOFormat(startTime)).format("YYYY-MM-DDTHH:mm");
+          //   const formattedEndTime = dayjs(convertToISOFormat(endTime)).format("YYYY-MM-DDTHH:mm");
+          
+          //   const startObject = {
+          //     timestamp: formattedStartTime,
+          //     "MD08/FanInverter/0": null,
+          //     "MD08/FanInverter/1": null,
+          //     "MD08/FanInverter/2": null,
+          //     "MD08/FanInverter/3": null,
+          //     "MD08/FanInverter/4": null,
+          //     "MD08/HeatController/0": null,
+          //     "MD08/HeatController/1": null,
+          //     "MD08/HeatController/2": null,
+          //     "MD08/HeatController/3": null,
+          //     "MD08/HeatController/4": null,
+          //     "MD08/HeatController/5": null,
+          //     "MD08/HeatController/6": null,
+          //   };
+          
+          //   const endObject = {
+          //     timestamp: formattedEndTime,
+          //     "MD08/FanInverter/0": null,
+          //     "MD08/FanInverter/1": null,
+          //     "MD08/FanInverter/2": null,
+          //     "MD08/FanInverter/3": null,
+          //     "MD08/FanInverter/4": null,
+          //     "MD08/HeatController/0": null,
+          //     "MD08/HeatController/1": null,
+          //     "MD08/HeatController/2": null,
+          //     "MD08/HeatController/3": null,
+          //     "MD08/HeatController/4": null,
+          //     "MD08/HeatController/5": null,
+          //     "MD08/HeatController/6": null,
+          //   };
+          
+          //   const updatedTimestamps = [startObject, ...updateTimeStamp];
+          
+          //   updatedTimestamps.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+          
+          //   const filledTimestamps = [];
+          //   for (let i = 0; i < updatedTimestamps.length - 1; i++) {
+          //     let current = dayjs(updatedTimestamps[i].timestamp);
+          //     const next = dayjs(updatedTimestamps[i + 1].timestamp);
+          
+          //     filledTimestamps.push(updatedTimestamps[i]);
+          
+          //     while (next.diff(current, "minute") > 30) {
+          //       const missingTimestamp = current.add(30, "minute").format("YYYY-MM-DDTHH:mm");
+          //       filledTimestamps.push({
+          //         timestamp: missingTimestamp,
+          //         "MD08/FanInverter/0": null,
+          //         "MD08/FanInverter/1": null,
+          //         "MD08/FanInverter/2": null,
+          //         "MD08/FanInverter/3": null,
+          //         "MD08/FanInverter/4": null,
+          //         "MD08/HeatController/0": null,
+          //         "MD08/HeatController/1": null,
+          //         "MD08/HeatController/2": null,
+          //         "MD08/HeatController/3": null,
+          //         "MD08/HeatController/4": null,
+          //         "MD08/HeatController/5": null,
+          //         "MD08/HeatController/6": null,
+          //       });
+          //       current = current.add(40, "minute");
+          //     }
+          //   }
+          
+          //   filledTimestamps.push(updatedTimestamps[updatedTimestamps.length - 1]);
+          
+          //   return filledTimestamps;
+          // };
+          
+          // const updatedReportData = addMissingTimestamps(updateTimeStamp, startTime, endTime);
+          // // console.log(updatedReportData.map(d => d.timestamp))
+          // setReportData(updatedReportData);
+          // console.log(updatedReportData);
+      });
+
+      if (connection.state === 'Connected') {
+        const data = await connection.invoke('SendAll');
+        const parsedData = JSON.parse(data);
+        const setValueHeatControllerData = [];
+        parsedData.forEach(item => {
+
+        if (item.MessageType === "SetValue" && item.DeviceId.includes("HeatController")) {
+            setValueHeatControllerData.push(item);
+        }
+        });
+        setSetPoint(setValueHeatControllerData);
+      }
+    } 
+    catch (error) {
         toast.error(`Error fetching data: ${error.message}`);
     } finally {
         setLoading(false);
@@ -606,8 +1021,10 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
         .catch((error) => {
           throw new Error("Failed to post: ", error);
         });
-
-        const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Cabinets/Export?CabinetId=${CabinetId}&WorkOrder=${WorkOrder}&Customer=${Customer}&Enamel=${Enamel}&Size=${Size}&StartTime=${StartTime.replace("T", " ")}&EndTime=${EndTime.replace("T", " ")}&StartAt=${StartAt.replace("T", " ")}&EndAt=${EndAt.replace("T", " ")}`;
+        
+        // await CabinetsApi.Cabinets.getExport(CabinetId, WorkOrder, Customer, Enamel, Size, StartTime, EndTime);
+        // link = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Cabinets/Export?CabinetId=${CabinetId}&WorkOrder=${WorkOrder}&Customer=${Customer}&Enamel=${Enamel}&Size=${Size}&StartTime=${StartTime.replace("T", " ")}&EndTime=${EndTime.replace("T", " ")}&StartAt=${StartAt.replace("T", " ")}&EndAt=${EndAt.replace("T", " ")}`;
+        const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Cabinets/Export?CabinetId=${CabinetId}&WorkOrder=${WorkOrder}&Customer=${Customer}&Enamel=${Enamel}&Size=${Size}&StartTime=${StartTime.replace("T", " ")}&EndTime=${EndTime.replace("T", " ")}&StartAt=${StartTime.replace("T", " ")}&EndAt=${EndTime.replace("T", " ")}`;
         console.log(url);
         const getResponse = await fetch(url, { method: "GET" });
         if (getResponse.ok) {
@@ -619,9 +1036,6 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
             document.body.appendChild(a);
             a.click();
             a.remove();
-            toast.success("Xuất tệp Excel thành công!");
-        } else {
-            throw new Error("Không thể xuất tệp Excel, vui lòng thử lại.");
         }
     } catch (error) {
         toast.error(error.message);
@@ -638,16 +1052,15 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
     // }
     setLoading(true);
     try {
-      const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Reports?WorkOrder=${WorkOrder}&Enamel=${Enamel}&Customer=${Customer}&Size=${Size}&StartAt=${StartAt === "NaN-NaN-NaNTNaN:NaN:NaN" ? "" : StartAt.replace("T", " ")}&EndAt=${EndAt === "NaN-NaN-NaNTNaN:NaN:NaN" ? "" :EndAt.replace("T", " ")}&CabinetId=${CabinetId[0]===undefined ? "" : CabinetId[0]}`;
-      console.log("Fetching data from URL:", url); 
-      const response = await fetch(url, { method: "GET" });
-      if (!response.ok) {
-        throw new Error(`Failed to fetch data: ${response.statusText}`);
-      }
-      const data = await response.json();
-      console.log("Data received:", data);
-      setsearchReportList(data);
-      setShowDownloads(true);
+      callApi(
+        () => CabinetsApi.Cabinets.getOldExport(CabinetId, WorkOrder, Customer, Enamel, Size, StartAt, EndAt),
+            (data) => {
+              const dataSearch = data;
+              console.log("DataSearch received:", dataSearch);
+              setsearchReportList(dataSearch);
+              setShowDownloads(true);
+            },
+        )
     } catch (error) {
       console.error("Error fetching report data:", error);
       toast.error(`Error: ${error.message}`);
@@ -666,8 +1079,6 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
     });
   };
 
-
-
   // console.log(pageIndex && !isMobile)
   // console.log(workOrder)
   // console.log(customer)
@@ -675,8 +1086,9 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
   // console.log(reportData.map(d => d.timestamp))
   // console.log(dayStart)
   // console.log(dayEnd)
-  console.log(dayWOStart)
-  console.log(dayWOEnd)
+  // console.log(dayWOStart)
+  // console.log(dayWOEnd)
+  // console.log(setPoint)
 
   return (
   <div className="flex h-screen overflow-hidden w-full">
@@ -812,6 +1224,7 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
               <>
                 <ReactApexChart
                   ref={chartTemp1Ref}
+                  key={JSON.stringify(tempChart1Options)}
                   options={tempChart1Options}
                   series={tempChart1Series}
                   type="line"
@@ -829,6 +1242,7 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
               <>
                 <ReactApexChart
                   ref={chartTemp2Ref}
+                  key={JSON.stringify(tempChart2Options)}
                   options={tempChart2Options}
                   series={tempChart2Series}
                   type="line"
@@ -846,6 +1260,7 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
               <>
                 <ReactApexChart
                   ref={chartFanRef}
+                  key={JSON.stringify(fanChartOptions)}
                   options={fanChartOptions}
                   series={fanChartSeries}
                   type="line"
@@ -890,4 +1305,3 @@ const formatDateTime = (dateString) => new Date(dateString).toLocaleString();
   
 )};
 export default POV;
-

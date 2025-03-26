@@ -12,97 +12,7 @@ import Loading from "../../components/Layout/components/Loading/Loading";
 const DetailData = () => {
   const location = useLocation()
   const { data } = location.state
-
-  // const velocityData = [
-  //   {
-  //     id: 1,
-  //     name: "Server Vel A",
-  //     currentVel: 75,
-  //   },
-  //   {
-  //   id: 2,
-  //   name: "Server Vel B",
-  //   currentVel: 75,
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Server Vel c",
-  //     currentVel: 75,
-  //     },
-  //     {
-  //       id: 4,
-  //       name: "Server Vel A",
-  //       currentVel: 75,
-  //     }
-  // ];
-
-  // const temperatureData = [
-  //   {
-  //     id: 1,
-  //     name: "Nhiệt đầu vào",
-  //     currentTemp: 75,
-  //     setPoint: 72,
-  //     alarmLow: 65,
-  //     alarmHigh: 80,
-  //     history: Array.from({ length: 24 }, () => Math.floor(Math.random() * 15) + 65),
-  //   },
-  //   {
-  //   id: 2,
-  //   name: "Nhiệt trung tâm",
-  //   currentTemp: 75,
-  //   setPoint: 72,
-  //   alarmLow: 65,
-  //   alarmHigh: 80,
-  //   history: Array.from({ length: 24 }, () => Math.floor(Math.random() * 15) + 65),
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Nhiệt đầu ra",
-  //     currentTemp: 75,
-  //     setPoint: 72,
-  //     alarmLow: 65,
-  //     alarmHigh: 80,
-  //     history: Array.from({ length: 24 }, () => Math.floor(Math.random() * 15) + 65),
-  //     },
-  //     {
-  //       id: 4,
-  //       name: "Nhiệt ủ mềm",
-  //       currentTemp: 75,
-  //       setPoint: 72,
-  //       alarmLow: 65,
-  //       alarmHigh: 80,
-  //       history: Array.from({ length: 24 }, () => Math.floor(Math.random() * 15) + 65),
-  //     },
-  //     {
-  //     id: 5,
-  //     name: "Nhiệt tuần hoàn",
-  //     currentTemp: 100,
-  //     setPoint: 72,
-  //     alarmLow: 65,
-  //     alarmHigh: 80,
-  //     history: Array.from({ length: 24 }, () => Math.floor(Math.random() * 15) + 65),
-  //     },
-  //     {
-  //       id: 6,
-  //       name: "Before",
-  //       currentTemp: 75,
-  //       setPoint: 72,
-  //       alarmLow: 65,
-  //       alarmHigh: 80,
-  //       history: Array.from({ length: 24 }, () => Math.floor(Math.random() * 15) + 65),
-  //       },
-  //       {
-  //         id: 7,
-  //         name: "After",
-  //         currentTemp: 75,
-  //         setPoint: 72,
-  //         alarmLow: 65,
-  //         alarmHigh: 80,
-  //         history: Array.from({ length: 24 }, () => Math.floor(Math.random() * 15) + 65),
-  //         },
-        
-  // ];
-
+  console.log(data)
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -150,6 +60,7 @@ const DetailData = () => {
                 try {
                     const data = await connection.invoke('SendAll');
                     const parsedData = JSON.parse(data);
+                    console.log(parsedData);
                     const presentValueFanInverterData = [];
                     const presentValueHeatControllerData = [];
                     const setValueHeatControllerData = [];
@@ -164,9 +75,9 @@ const DetailData = () => {
                     presentValueHeatControllerData.push(item);
                     } else if (item.MessageType === "SetValue" && item.DeviceId.includes("HeatController")) {
                         setValueHeatControllerData.push(item);
-                    } else if (item.MessageType === "AlarmLowThresholdValue") {
+                    } else if (item.MessageType === "LowThresholdSetValue") {
                     alarmLowThresholdValueData.push(item);
-                    } else if (item.MessageType === "AlarmHighThresholdValue") {
+                    } else if (item.MessageType === "HighThresholdSetValue") {
                     alarmHighThresholdValueData.push(item);
                     } else if (item.MessageType === "Error" && item.DeviceId.includes("HeatController")) {
                         errorHeatControllerData.push(item);
@@ -201,10 +112,11 @@ const DetailData = () => {
     console.log("AlarmHighThresholdValueHC: ", AlarmHighThresholdValueHC)
 
     
-  const velocityData = presentValueFI.map((item, index) => {
+  let velocityData = presentValueFI.map((item, index) => {
       const correspondingDevice = data.dev.find(
-          (device) => device.deviceId === `MD8/FanInverter/${index}`
+          (device) => device.deviceId === `MD08/FanInverter/${index}`
       );
+      console.log(correspondingDevice);
       return {
           id: correspondingDevice ? correspondingDevice.deviceId : null,
           name: correspondingDevice ? correspondingDevice.name : "Unknown",
