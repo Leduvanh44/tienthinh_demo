@@ -17,16 +17,8 @@ const TemperatureMonitorCard = ({
   const [deviceIsOff, setDeviceIsOff] = useState(false);
 
   useEffect(() => {
-    if (
-      (currentTemp === -1 && setPoint === -1) || (alarmLow === null && alarmHigh === null)
-    ) {
+    if (currentTemp === -1 || setPoint === -1 && alarmLow === null && alarmHigh === null) {
       setDeviceIsOff(true);
-    } else if (alarmLow === null) {
-      alarmLow = 0;
-      setDeviceIsOff(false);
-    } else if (alarmHigh === null) {
-      alarmHigh = 800;
-      setDeviceIsOff(false);
     } else {
       setDeviceIsOff(false);
     }

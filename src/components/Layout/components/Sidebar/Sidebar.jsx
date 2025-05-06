@@ -34,7 +34,7 @@ const Sidebar = () => {
     navigate(route);
     setCurrentPath(route);
   };
-
+  // console.log(currentPath)
   const resetLoginData = () => {
     const savedData = localStorage.getItem("loginData");
     if (savedData) {
@@ -74,7 +74,7 @@ const Sidebar = () => {
       }}
     >
       {/* Mobile Toggle Button */}
-      {isMobile && (
+      {(isMobile || currentPath === "/Dashboard") && (
         <button
           onClick={handleToggle}
           className={`fixed bottom-6 left-6 p-2 bg-gray-800 text-white rounded-lg z-50`}
@@ -87,13 +87,13 @@ const Sidebar = () => {
       {/* Sidebar Content */}
       <div
         className={`h-full bg-gray-800 text-white transition-all duration-300 ease-in-out ${
-          isMinimized && isMobile
+          isMinimized && (isMobile || currentPath === "/Dashboard")
             ? "w-0 overflow-hidden"
             : isMinimized
-            ? "w-[90px] sm:invisible sm:w-0"
+            ? "w-[72px] sm:invisible sm:w-0"
             : "visible w-[200px] sm:w-screen"
         } ${
-          isMobile
+          (isMobile || currentPath === "/Dashboard")
             ? isMinimized
               ? "translate-x-[-100%]"
               : "translate-x-0"
@@ -131,7 +131,7 @@ const Sidebar = () => {
                 Icon={item.icon}
                 label={item.label}
                 actived={currentPath.includes(item.route)}
-                isExpand={!isMinimized || isMobile}
+                isExpand={!isMinimized || (isMobile || currentPath === "/Dashboard")}
                 onClick={() => handleClick(item.route)}
               />
             ))}
@@ -140,7 +140,7 @@ const Sidebar = () => {
               Icon={lastItem.icon}
               label={lastItem.label}
               actived={false}
-              isExpand={!isMinimized || isMobile}
+              isExpand={!isMinimized || (isMobile || currentPath === "/Dashboard")}
               onClick={() => handleClick(lastItem.route)}
             />
           </ul>

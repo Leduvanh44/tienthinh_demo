@@ -11,12 +11,6 @@ import { FaCheck, FaTimes, FaExclamationTriangle } from "react-icons/fa";
 import Card from "@/components/Card";
 
 const Data = () => {
-  const [cabinetFake] = useState([
-    { id: 2, name: "MD01", status: "operating", errors: 0 , isError: false},
-    { id: 3, name: "MD02", status: "operating", errors: 3 , isError: false},
-    { id: 4, name: "MD03", status: "stopped", errors: 0 , isError: false},
-    { id: 5, name: "MD04", status: "operating", errors: 3 , isError: false},
-  ]);
   const callApi = useCallApi();
   const navigate = useNavigate()
 
@@ -86,6 +80,7 @@ const Data = () => {
                     } else if (item.MessageType === "Error" && item.DeviceId.includes("FanInverter")) {
                         errorFanInverterData.push(item);
                     }
+                    
                     });
                     setPresentValueHC(presentValueHeatControllerData);
                     setPresentValueFI(presentValueFanInverterData);
@@ -153,7 +148,7 @@ const Data = () => {
 
   const getDeviceList = useCallback(() => {
       callApi(
-          () => CabinetsApi.Cabinets.getDevices(),
+          () => CabinetsApi.Cabinets.getDevices(""),
           (data) => setDevices(data),
       )
   }, [callApi])
@@ -184,7 +179,6 @@ const Data = () => {
   };
 
   const handleClickDetail = (name, id) => {
-    
     const data = {
       name: name, 
       dev: devices
@@ -259,7 +253,7 @@ const Data = () => {
           <div className="flex items-center mb-4">
             <div
               className="p-2 flex items-center justify-center rounded-lg w-[40px] h-[40px] mr-4"
-              style={{ backgroundColor: `#64ac6c` }}
+              style={{ backgroundColor: `#8be879` }}
             >
               <FaCheck className="text-white" />
             </div>

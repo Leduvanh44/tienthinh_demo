@@ -87,7 +87,7 @@ const LoginForm = () => {
   {/* Container hình ảnh */}
   <div className="flex items-center justify-center mb-4">
     <img
-      src="/28.png"
+      src="/bker.png"
       className="w-[90%] sm:w-1/2 px-2 py-2"
       alt="Menu Icon"
     />
@@ -96,7 +96,7 @@ const LoginForm = () => {
   {/* Form đăng nhập */}
   <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl">
     <div>
-      <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 font-roboto">
+      <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
         Đăng nhập vào tài khoản của bạn
       </h2>
     </div>
@@ -118,7 +118,7 @@ const LoginForm = () => {
             required
             className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
               errors.email ? "border-red-500" : "border-gray-300"
-            } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:bg-primary-1 focus:z-10 sm:text-sm transition-colors duration-200`}
+            } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:to-blue-300 focus:z-10 sm:text-sm transition-colors duration-200`}
             placeholder="Email address"
             value={formData.email}
             onChange={handleInputChange}

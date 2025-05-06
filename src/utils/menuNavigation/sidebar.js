@@ -6,10 +6,16 @@ import { FaSignOutAlt } from "react-icons/fa";
 import { paths } from "../../config"
 const SIDEBAR_ITEMS = [
     {
+        label: "Dashboard",
+        icon: QuantityIcon,
+        route: paths.Dashboard,
+    },
+    {
         label: "Data Detail",
         icon: ProductivityIcon,
         route: paths.Data,
     },
+
     {
         label: "Error History",
         icon: ResourceIcon,

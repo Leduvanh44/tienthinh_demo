@@ -1,2 +1,5 @@
 export { default as Data } from "./Data"
 export { default as DetailData } from "./DetailData"
+export { default as DetailCopperWireData } from "./DetailCopperWireData"
+export { default as DetailLearData } from "./DetailLearData"
+export { default as DetailFanTempData} from "./DetailFanTempData"

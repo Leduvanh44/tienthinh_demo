@@ -40,7 +40,27 @@ const routes = [
         layout: "main",
         protected: true,
     },
-
+    {
+        path: paths.DetailCopperWireData,
+        title: null,
+        component: Pages.DetailCopperWireData,
+        layout: "main",
+        protected: true,
+    },
+    {
+        path: paths.DetailLearData,
+        title: null,
+        component: Pages.DetailLearData,
+        layout: "main",
+        protected: true,
+    },
+    {
+        path: paths.DetailFanTempData,
+        title: null,
+        component: Pages.DetailFanTempData,
+        layout: "main",
+        protected: true,
+    },
     {
         path: paths.DetailPOV,
         title: null,

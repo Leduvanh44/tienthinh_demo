@@ -7,159 +7,71 @@ import VelocityMonitorCard from "@/components/TemperatureMonitoringCard/Velocity
 import { current } from "@reduxjs/toolkit";
 import hubConnection from "@/services/signalr/productionProgress/hubConnection"
 import Loading from "../../components/Layout/components/Loading/Loading";
-
+import Coppergraph from "@/components/Coppergraph";
+import CopperDiameterCard from '../../components/TemperatureMonitoringCard/CopperDiameterCard';
+import { useNavigate } from "react-router-dom";
+import { paths } from "@/config";
+import { useCallApi } from "@/hooks"
+import { CabinetsApi } from "../../services/api"
 
 const DetailData = () => {
   const location = useLocation()
-  const { data } = location.state
-  console.log(data)
+  const callApi = useCallApi();
+  const [cabinet, setCabinet] = useState("");
+  const data = location.state?.data || []
+  console.log(data);
+  // setCabinet(data.name);
+  const getDeviceList = useCallback(() => {
+    callApi(
+        () => CabinetsApi.Cabinets.getDevices(""),
+        (data) => setDevices(data),
+    )
+  }, [callApi])
+  useEffect(() => {
+      getDeviceList()
+  }, [getDeviceList])
+
   const [isMobile, setIsMobile] = useState(false);
 
+
   useEffect(() => {
-    // console.log(window.innerWidth, window.innerHeight)
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768 || window.innerHeight <= window.innerWidth);
     };
-  
     handleResize(); 
     window.addEventListener("resize", handleResize);
-  
     return () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
 
-  const [cabinets, setCabinets] = useState([]);
   const [devices, setDevices] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [intervalId, setIntervalId] = useState(null);
   const [connection, setConnection] = useState()
-
-  const [presentValueFI, setPresentValueFI] = useState([]);
-
-  const [errorFI, setErrorFI] = useState([]);
-
-  const [setValueHC, setSetValueHC] = useState([]);
-
-  const [errorHC, setErrorHC] = useState([]);  
-
-  const [presentValueHC, setPresentValueHC] = useState([]);
-
-  const [AlarmLowThresholdValueHC, setAlarmLowThresholdValueHC] = useState([]);
-  const [AlarmHighThresholdValueHC, setAlarmHighThresholdValueHC] = useState([]);
+  const navigate = useNavigate()
 
   useEffect(() => {
   hubConnection.start().then((connection) => {
       setConnection(connection)
   })
   }, [])
-  useEffect(() => {
-    if (connection) {
-        const id = setInterval(async () => {
-            if (connection.state === 'Connected') {
-                try {
-                    const data = await connection.invoke('SendAll');
-                    const parsedData = JSON.parse(data);
-                    console.log(parsedData);
-                    const presentValueFanInverterData = [];
-                    const presentValueHeatControllerData = [];
-                    const setValueHeatControllerData = [];
-                    const alarmLowThresholdValueData = [];
-                    const alarmHighThresholdValueData = [];
-                    const errorFanInverterData = [];
-                    const errorHeatControllerData = [];
-                    parsedData.forEach(item => {
-                    if (item.MessageType === "PresentValue" && item.DeviceId.includes("FanInverter")) {
-                    presentValueFanInverterData.push(item);
-                    } else if (item.MessageType === "PresentValue" && item.DeviceId.includes("HeatController")) {
-                    presentValueHeatControllerData.push(item);
-                    } else if (item.MessageType === "SetValue" && item.DeviceId.includes("HeatController")) {
-                        setValueHeatControllerData.push(item);
-                    } else if (item.MessageType === "LowThresholdSetValue") {
-                    alarmLowThresholdValueData.push(item);
-                    } else if (item.MessageType === "HighThresholdSetValue") {
-                    alarmHighThresholdValueData.push(item);
-                    } else if (item.MessageType === "Error" && item.DeviceId.includes("HeatController")) {
-                        errorHeatControllerData.push(item);
-                    } else if (item.MessageType === "Error" && item.DeviceId.includes("FanInverter")) {
-                        errorFanInverterData.push(item);
-                    }
-                    });
-                    setPresentValueHC(presentValueHeatControllerData);
-                    setPresentValueFI(presentValueFanInverterData);
-                    setAlarmLowThresholdValueHC(alarmLowThresholdValueData);
-                    setAlarmHighThresholdValueHC(alarmHighThresholdValueData);
-                    setErrorFI(errorFanInverterData);
-                    setErrorHC(errorHeatControllerData);
-                    setSetValueHC(setValueHeatControllerData);
-                    setLoading(false);
-                } catch (error) {
-                    console.error('Error invoking SendAll:', error);
-                }
-            }
-        }, 5000); 
-        setIntervalId(id);
 
-        return () => {
-            clearInterval(id); 
-        };
+    const handleClickDiameterDetail = () => {
+      navigate(`${paths.Data}/${data.name}/WireDiameter`, { state: {name: data.name} })
     }
-}, [connection]);
 
-    console.log("presentValueFI: ", presentValueFI)
-    console.log("presentValueHC: ", presentValueHC)
-    console.log("AlarmLowThresholdValueHC: ", AlarmLowThresholdValueHC)
-    console.log("AlarmHighThresholdValueHC: ", AlarmHighThresholdValueHC)
+    const handleClickFanTempDetail = () => {
+      navigate(`${paths.Data}/${data.name}/FanTemp`, { state: {name: data.name, dev: data.dev} })
+    }
 
-    
-  let velocityData = presentValueFI.map((item, index) => {
-      const correspondingDevice = data.dev.find(
-          (device) => device.deviceId === `MD08/FanInverter/${index}`
-      );
-      console.log(correspondingDevice);
-      return {
-          id: correspondingDevice ? correspondingDevice.deviceId : null,
-          name: correspondingDevice ? correspondingDevice.name : "Unknown",
-          currentVel: Math.ceil(item.TagValue),
-      };
-  });
+    const handleClickDemDetail = () => {
+      navigate(`${paths.Data}/${data.name}/Lear`, { state: {name: data.name} })
+    }
 
-  let temperatureData = data.dev
-  .filter((device) => device.deviceType.deviceTypeId === "HeatController") // Lọc thiết bị "HeatController"
-  .map((device, index) => {
-    const id = device.deviceId;
-    const name = device.name;
-    let currentTemp;
-    let setPoint;
-    let alarmLow;
-    let alarmHigh;
-
-      currentTemp = presentValueHC[index]?.TagValue || null;
-      setPoint = setValueHC[index]?.TagValue || null;
-      alarmLow = AlarmLowThresholdValueHC[index]?.TagValue || null;
-      alarmHigh = AlarmHighThresholdValueHC[index]?.TagValue || null;
-      
-    return {
-      id,
-      name,
-      currentTemp,
-      setPoint,
-      alarmLow,
-      alarmHigh,
-    };
-  });
-
-console.log(temperatureData);
-// console.log(presentValueHC);
-
-  const [showSettings, setShowSettings] = useState(false);
-  const [selectedCard, setSelectedCard] = useState(null);
-
-  const handleSettingsClick = (e, card) => {
-    e.stopPropagation();
-    setSelectedCard(card);
-    setShowSettings(true);
-  };
+    const handleClickLearDetail = () => {
+      navigate(`${paths.Data}/${data.name}/Lear`, { state: {name: data.name} })
+    }
 
   return (
   <div className="container flex h-screen overflow-hidden">
@@ -172,36 +84,64 @@ console.log(temperatureData);
         Thông số các thiết bị trong tủ {data.name}
     </h1>
     <div
-      className="grid gap-10"
+      className="grid gap-5"
       style={{
-        gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+        gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
       }}
     >
-      {temperatureData.map((card) => (
-        <div key={card.id} className={isMobile ? "flex justify-center items-center" : ""}>
-        <TemperatureMonitorCard
-          key={card.id}
-          {...card}
-          onSettingsClick={handleSettingsClick}
+
+      <div key="diameter" className={isMobile ? "flex justify-center items-center" : ""}>
+        <CopperDiameterCard
+          key="diameter"
+          id="MD08/WireDiameter"
+          name="Máy đo đường kính dây"
+          overThresholdCount={5} 
+          normalCount={14}       
+          inactiveCount={5}
+          image="/resize/diameter_removebg.png"
+          handleDetail={handleClickDiameterDetail}
         />
-        </div>
-      ))}
-      {velocityData.map((card) => (
-        <div key={card.id} className={isMobile ? "flex justify-center items-center" : ""}>
-        <VelocityMonitorCard
-          key={card.id}
-          {...card}
-          onSettingsClick={handleSettingsClick}
+      </div>
+
+      <div key="fantemp" className={isMobile ? "flex justify-center items-center" : ""}>
+        <CopperDiameterCard
+          key="fantemp"
+          id="MD08/FI-HC"
+          name="Bộ Điều Khiển Nhiệt độ và Tốc Độ Quạt"
+          overThresholdCount={5} 
+          normalCount={14}       
+          inactiveCount={5}
+          image="/resize/fantemp_removebg.png"
+          handleDetail={handleClickFanTempDetail}
         />
-        </div>
-      ))}
+      </div>
+
+      {/* <div key="dem" className={isMobile ? "flex justify-center items-center" : ""}>
+        <CopperDiameterCard
+          key="dem"
+          id="MD08/DemMachine"
+          name="Máy Kéo DEM"
+          overThresholdCount={5} 
+          normalCount={14}       
+          inactiveCount={5}
+          handleDetail={handleClickDemDetail}
+        />
+      </div> */}
+
+      <div key="lear" className={isMobile ? "flex justify-center items-center" : ""}>
+        <CopperDiameterCard
+          key="lear"
+          id="MD08/LearMachine"
+          name="Máy Soi Lỗ Kim"
+          overThresholdCount={5} 
+          normalCount={14}       
+          inactiveCount={5}
+          image="/resize/lear_removebg.png"
+          handleDetail={handleClickLearDetail}
+        />
+      </div>
     </div>
 
-    {showSettings && selectedCard && (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        {}
-      </div>
-    )}
   </div>
   {loading && <Loading />}
   </div>

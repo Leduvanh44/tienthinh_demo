@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, forwardRef } from "react";
 import { FaChevronDown, FaChevronUp, FaTimes } from "react-icons/fa";
 import Button from "@/components/Button"
 
-const TableCustomErr = ({ data }) => {
+const TableCustomErr = forwardRef(({ data }, ref) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showResolutionPopup, setShowResolutionPopup] = useState(false);
   const [selectedDeviceId, setSelectedDeviceId] = useState(null);
@@ -37,6 +37,7 @@ const TableCustomErr = ({ data }) => {
       </div>
 
       <table
+        ref={ref}
         className="min-w-full border rounded-lg overflow-hidden"
         role="table"
         style={{ borderCollapse: "separate", borderSpacing: "0" }}
@@ -133,6 +134,6 @@ const TableCustomErr = ({ data }) => {
 
     </div>
   );
-};
+});
 
 export default TableCustomErr;

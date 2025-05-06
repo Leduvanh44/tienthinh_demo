@@ -13,8 +13,10 @@ import Loading from "../../components/Layout/components/Loading/Loading";
 import ReactApexChart from "react-apexcharts";
 import hubConnection from "@/services/signalr/productionProgress/hubConnection"
 import ToggleButtons from "@/components/ToggleButtons"
+import DateInput from "@/components/DateInput"
 import './pov.less'
 import dayjs from 'dayjs';
+import { max } from 'd3';
 
 const formatDate = (date, time) => {
   const yyyy = date.getFullYear();
@@ -22,10 +24,16 @@ const formatDate = (date, time) => {
   const dd = String(date.getDate()).padStart(2, "0");
   return `${MM}-${dd}-${yyyy}T${time}`;
 };
-
+const formatDay = (date) => {
+  const yyyy = date.getFullYear();
+  const MM = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${MM}-${dd}`;
+};
 const now = new Date();
+const initialDay = formatDay(now);
 const threeDaysAgo = new Date(now);
-threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+threeDaysAgo.setDate(threeDaysAgo.getDate() - 1);
 
 const startTime = "10:00:00";
 const endTime = "11:00:00";
@@ -36,6 +44,7 @@ const initialDayWOStart = formatDate(threeDaysAgo, startTime);
 const initialDayWOEnd = formatDate(now, endTime); 
 
 const POV = () => {
+  const [dayWork, setDayWork] = useState(`${initialDay}`);
   const [isMobile, setIsMobile] = useState(false);
   const [connection, setConnection] = useState()
   const [dayStart, setDayStart] = useState(initialDayStart);
@@ -46,6 +55,10 @@ const POV = () => {
   const [customer, setCustomer] = useState("")
   const [size, setSize] = useState()
   const [enamel, setEnamel] = useState("")
+  const [maxStandard, setMaxStandard] = useState("")
+  const [minStandard, setMinStandard] = useState("")
+  const [diameterSpeed, setDiameterSpeed] = useState("")
+  const [ingredient, setIngredient] = useState("")
   const [cabinetId, setCabinetId] = useState("")
   const [loading, setLoading] = useState(false);
   const callApi = useCallApi()
@@ -53,13 +66,20 @@ const POV = () => {
   const [devices, setDevices] = useState([]);
   const [deviceNames, setDeviceNames] = useState([]);
   const [reportData, setReportData] = useState([]);
+  const [reportDiameterData, setReportDiameterData] = useState([]);
   const [showGraphs, setShowGraphs] = useState(false);
+  const [showDiameterGraphs, setShowDiameterGraphs] = useState(false);
   const [searchReportList, setsearchReportList] = useState([]);
   const [showDownloads, setShowDownloads] = useState(false);
   const chartTemp1Ref = useRef(null);
   const chartTemp2Ref = useRef(null);
+  const chartTemp3Ref = useRef(null);
+  const chartTemp4Ref = useRef(null);
   const chartFanRef = useRef(null);
+
   const [setPoint, setSetPoint] = useState([]);
+  const [reportType, setReportType] = useState("");
+
   
   useEffect(() => {
     const handleResize = () => {
@@ -74,7 +94,7 @@ const POV = () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
-  useEffect(() => {
+    useEffect(() => {
     hubConnection.start().then((connection) => {
         setConnection(connection)
     })
@@ -128,70 +148,6 @@ const POV = () => {
       getDeviceList()
   }, [getDeviceList])
 
-  const tempChart1Series = [
-    {
-      name: deviceNames[9],
-      data: reportData.map(d => d[devices[9]].value)
-    },
-    {
-      name: `${deviceNames[9]} cài đặt`,
-      data: reportData.map(d => d[devices[9]].setValue)
-    },
-    {
-      name: deviceNames[10],
-      data: reportData.map(d => d[devices[10]].value)
-    },
-    {
-      name: `${deviceNames[10]} cài đặt`,
-      data: reportData.map(d => d[devices[10]].setValue)
-    },
-    {
-      name: deviceNames[11],
-      data: reportData.map(d => d[devices[11]].value)
-    },
-    {
-      name: `${deviceNames[11]} cài đặt`,
-      data: reportData.map(d => d[devices[11]].setValue)
-    },
-
-  ];
-
-  const tempChart2Series = [
-    {
-      name: deviceNames[5],
-      data: reportData.map(d => d[devices[5]].value)
-    },
-    {
-      name: `${deviceNames[5]} cài đặt`,
-      data: reportData.map(d => d[devices[5]].setValue)
-    },
-    {
-      name: deviceNames[6],
-      data: reportData.map(d => d[devices[6]].value)
-    },
-    {
-      name: `${deviceNames[6]} cài đặt`,
-      data: reportData.map(d => d[devices[6]].setValue)
-    },
-    {
-      name: deviceNames[7],
-      data: reportData.map(d => d[devices[7]].value)
-    },
-    {
-      name: `${deviceNames[7]} cài đặt`,
-      data: reportData.map(d => d[devices[7]].setValue)
-    },
-    {
-      name: deviceNames[8],
-      data: reportData.map(d => d[devices[8]].value)
-    },
-    {
-      name: `${deviceNames[8]} cài đặt`,
-      data: reportData.map(d => d[devices[8]].setValue)
-    }
-  ];
-
-
   const fanChartSeries = [
     {
       name: deviceNames[0],
@@ -218,267 +174,6 @@ const POV = () => {
       data: Array(reportData.map(d => d[devices[0]].value).length).fill(2600)
     },      
   ];
-
-  const tempChart1Options = {
-    chart: {
-      type: "line",
-      id: "tempchart1",
-      // group: "sync",
-      toolbar: {
-        show: true, 
-        tools: {
-          download: false 
-        }
-      },
-      zoom: {
-        enabled: true,
-        type: "x"
-      },
-      events: {
-        zoomed: function (chartContext, { xaxis }) {
-          handleZoomSync("tempchart1", xaxis);
-        },
-      },
-    },
-    colors: ["#e60000", "#fc8482", "#36ac2b", "#a7ff9f", "#1344d1", "#a6c6ff", "#3f1a91", "#c9b4f6"],
-    dataLabels: {
-      enabled: false
-    },
-    stroke: {
-      curve: "smooth",
-      width: 2,
-      dashArray: Array(tempChart1Series.length)
-      .fill(0)
-      .map((_, index) => (index % 2 === 0 ? 0 : 5))
-    },
-    title: {
-      text: `Nhiệt độ đạt được của 3 thiết bị tủ ${cabinetId.length === 0 ? "MD08" : cabinetId[0]}`,
-      align: "left",
-      style: {
-        fontSize: isMobile ? '10px' : '16px', 
-        fontWeight: 'bold', 
-        fontFamily: 'Roboto', 
-        color: '#333',
-      }
-    },
-    subtitle: {
-      text: `Từ ${dayWOStart} đến ${dayWOEnd}`,
-      align: "left",
-      style: {
-        fontSize: isMobile ? '10px' : '16px', 
-        fontWeight: 'bold', 
-        fontFamily: 'Roboto', 
-        color: '#333',
-      }
-    },
-    grid: {
-      borderColor: "#e7e7e7",
-      row: {
-        colors: ["#f3f3f3", "transparent"],
-        opacity: 0.5
-      }
-    },
-    xaxis: {
-      categories: (reportData.map(d => d.timestamp)),
-      type: "category",
-      title: {
-        text: "Time",
-        align: "left",
-        style: {
-          fontSize: isMobile ? '12px': '16px', 
-          fontWeight: 'bold', 
-          fontFamily: 'Roboto', 
-          color: '#333',
-        }
-      }
-    },
-    yaxis: {
-      min: 0,
-      title: {
-        text: "Temperature (°C)",
-        style: {
-          fontSize: isMobile ? '12px': '16px', 
-          fontWeight: 'bold', 
-          fontFamily: 'Roboto', 
-          color: '#333',
-        }
-      }
-    },
-    legend: {
-      position: "top"
-    },
-    tooltip: {
-      enabled: true,
-      custom: function({ series, seriesIndex, dataPointIndex, w }) {
-        let tooltipContent = "<div style='padding: 10px;'>";
-        
-        let seriesData = w.config.series.map((seriesItem, index) => {
-          return {
-            name: seriesItem.name,
-            value: series[index][dataPointIndex],
-            color: w.config.colors[index]
-          };
-        });
-        seriesData.sort((a, b) => b.value - a.value);
-        
-        seriesData.forEach(item => {
-          tooltipContent += `
-            <div>
-              <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${item.color}; margin-right: 8px;"></span>
-              <strong>${item.name}:</strong> 
-              ${item.value === null 
-                  ? "Không có dữ liệu" 
-                  : (item.value === -1 
-                      ? "Thiết bị đã bị tắt" 
-                      : item.value.toFixed(2) + " °C"
-                  )
-              }            
-            </div>
-          `;
-        });
-  
-        tooltipContent += "</div>";
-        return tooltipContent;
-      }
-    }
-    // toolbar: {
-    //   export: {
-    //     png: `${cabinetId[0]}-${dayWOStart}${dayWOEnd}.png`
-    //   }
-    // }
-  };
-
-  const tempChart2Options = {
-    chart: {
-      type: "line",
-      id: "tempchart2",
-      toolbar: {
-        show: true, 
-        tools: {
-          download: false 
-        }
-      },
-      zoom: {
-        enabled: true,
-        type: "x"
-      },
-      events: {
-        zoomed: function (chartContext, { xaxis }) {
-          handleZoomSync("tempchart2", xaxis);
-        },
-      },
-    },
-    colors: ["#e60000", "#fc8482", "#36ac2b", "#a7ff9f", "#1344d1", "#a6c6ff", "#3f1a91", "#c9b4f6"],
-    title: {
-      text: `Nhiệt độ đạt được của 4 thiết bị tủ ${cabinetId.length === 0 ? "MD08" : cabinetId[0]}`,
-      align: "left",
-      style: {
-        fontSize: isMobile ? '10px' : '16px', 
-        fontWeight: 'bold', 
-        fontFamily: 'Roboto', 
-        color: '#333',
-      }
-    },
-    subtitle: {
-      text: `Từ ${dayWOStart} đến ${dayWOEnd}`,
-      align: "left",
-      style: {
-        fontSize: isMobile ? '10px' : '16px', 
-        fontWeight: 'bold', 
-        fontFamily: 'Roboto', 
-        color: '#333',
-      }
-    },
-    xaxis: {
-      categories: (reportData.map(d => d.timestamp)),
-      type: "category",
-      labels: {
-        format: "dd-MM-yyyy HH:mm",
-      },
-      // tickAmount: reportData.map(d => d.timestamp).length-2,
-      title: {
-        text: "Time",
-        align: "left",
-        style: {
-          fontSize: isMobile ? '12px': '16px', 
-          fontWeight: 'bold', 
-          fontFamily: 'Roboto', 
-          color: '#333',
-        }
-      }
-    },
-    dataLabels: {
-      enabled: false
-    },
-    stroke: {
-      curve: "smooth",
-      width: 2,
-      dashArray: Array(tempChart1Series.length)
-      .fill(0)
-      .map((_, index) => (index % 2 === 0 ? 0 : 5))
-    },
-    grid: {
-      borderColor: "#e7e7e7",
-      row: {
-        colors: ["#f3f3f3", "transparent"],
-        opacity: 0.5
-      }
-    },
-    yaxis: {
-      min: 0,
-      title: {
-        text: "Temperature (°C)",
-        style: {
-          fontSize: isMobile ? '12px': '16px', 
-          fontWeight: 'bold', 
-          fontFamily: 'Roboto', 
-          color: '#333',
-        }
-      }
-    },
-    legend: {
-      position: "top"
-    },
-    tooltip: {
-      enabled: true,
-      custom: function({ series, seriesIndex, dataPointIndex, w }) {
-        let tooltipContent = "<div style='padding: 10px;'>";
-        
-        let seriesData = w.config.series.map((seriesItem, index) => {
-          return {
-            name: seriesItem.name,
-            value: series[index][dataPointIndex],
-            color: w.config.colors[index]
-          };
-        });
-        seriesData.sort((a, b) => b.value - a.value);
-        
-        seriesData.forEach(item => {
-          tooltipContent += `
-            <div>
-              <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${item.color}; margin-right: 8px;"></span>
-              <strong>${item.name}:</strong> 
-              ${item.value === null 
-                  ? "Không có dữ liệu" 
-                  : (item.value === -1 
-                      ? "Thiết bị đã bị tắt" 
-                      : item.value.toFixed(2) + " °C"
-                  )
-              }            
-            </div>
-          `;
-        });
-  
-        tooltipContent += "</div>";
-        return tooltipContent;
-      }
-    }
-      // toolbar: {
-      //   export: {
-      //     png: `${cabinetId[0]}-${dayWOStart}${dayWOEnd}.png`
-      //   }
-      // }
-  };
 
   const fanChartOptions = {
     chart: {
@@ -589,6 +284,298 @@ const POV = () => {
     }
   };
 
+  function createDiameterSeries(chartData, daimeterStart, numOfDiameters = 6) {
+    const series = [];
+    for (let i = daimeterStart; i < numOfDiameters+daimeterStart; i++) {
+      series.push({
+        name: `Diameter ${i}`,
+        data: chartData[`diameter${i}`]
+      });
+    }
+    series.push({
+      name: "Max Diameter",
+      data: chartData[`maxWireDiameter`]
+    });
+    series.push({
+      name: "Min Diameter",
+      data: chartData[`minWireDiameter`]
+    });
+    console.log(series);
+    return series;
+  }
+  
+  const createDiameterChartSeriesOptions = (id, chartData, daimeterStart, numOfDiameters = 6) => {
+    const tempChart1Series = createDiameterSeries(chartData, daimeterStart, numOfDiameters);
+  
+    const tempChart1Options = {
+      chart: {
+        type: "line",
+        id: id, 
+        toolbar: {
+          show: true, 
+          tools: {
+            download: false 
+          }
+        },
+        zoom: {
+          enabled: true,
+          type: "x"
+        },
+        // events: {
+        //   zoomed: function (chartContext, { xaxis }) {
+        //     handleZoomSync(id, xaxis);
+        //   },
+        // },
+      },
+      colors: ["#e60000", "#fc8482", "#36ac2b", "#a7ff9f", "#1344d1", "#a6c6ff", "#3f1a91", "#c9b4f6"],
+      dataLabels: {
+        enabled: false
+      },
+      stroke: {
+        curve: "smooth",
+        width: 2,
+        dashArray: Array(tempChart1Series.length)
+          .fill(0)
+          .map((_, index) => (index % 2 === 0 ? 0 : 5))
+      },
+      title: {
+        text: `Đường kính dây line ${daimeterStart}-${daimeterStart + numOfDiameters-1} ${cabinetId.length === 0 ? "MD08" : cabinetId[0]}`,
+        align: "left",
+        style: {
+          fontSize: isMobile ? '10px' : '16px', 
+          fontWeight: 'bold', 
+          color: '#333',
+        }
+      },
+      subtitle: {
+        text: `Từ ${dayWOStart} đến ${dayWOEnd}`,
+        align: "left",
+        style: {
+          fontSize: isMobile ? '10px' : '16px', 
+          fontWeight: 'bold', 
+          fontFamily: 'Roboto', 
+          color: '#333',
+        }
+      },
+      grid: {
+        borderColor: "#e7e7e7",
+        row: {
+          colors: ["#f3f3f3", "transparent"],
+          opacity: 0.5
+        }
+      },
+      xaxis: {
+        categories: chartData[`timestamp`],
+        type: "category",
+        title: {
+          text: "Time",
+          align: "left",
+          style: {
+            fontSize: isMobile ? '12px': '16px', 
+            fontWeight: 'bold', 
+            fontFamily: 'Roboto', 
+            color: '#333',
+          }
+        }
+      },
+      yaxis: {
+        min: 0,
+        title: {
+          text: "Diameter (mm)",
+          style: {
+            fontSize: isMobile ? '12px': '16px', 
+            fontWeight: 'bold', 
+            fontFamily: 'Roboto', 
+            color: '#333',
+          }
+        }
+      },
+      legend: {
+        position: "top"
+      },
+      tooltip: {
+        enabled: true,
+        custom: function({ series, seriesIndex, dataPointIndex, w }) {
+          let tooltipContent = "<div style='padding: 10px;'>";
+    
+          let seriesData = w.config.series.map((seriesItem, index) => {
+            return {
+              name: seriesItem.name,
+              value: series[index][dataPointIndex],
+              color: w.config.colors[index]
+            };
+          });
+          seriesData.sort((a, b) => b.value - a.value);
+    
+          seriesData.forEach(item => {
+            tooltipContent += `
+              <div>
+                <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${item.color}; margin-right: 8px;"></span>
+                <strong>${item.name}:</strong> 
+                ${item.value === null 
+                    ? "Không có dữ liệu" 
+                    : (item.value === -1 
+                        ? "line đã bị tắt" 
+                        : item.value.toFixed(3) + " °C"
+                    )
+                }            
+              </div>
+            `;
+          });
+    
+          tooltipContent += "</div>";
+          return tooltipContent;
+        }
+      }
+    };
+  
+    return [ tempChart1Series, tempChart1Options ];
+  }
+  
+  function tempChartSeries(deviceNumList, stringAdd) {
+    return deviceNumList.flatMap((deviceIndex) => {
+      return [
+        {
+          name: deviceNames[deviceIndex],
+          data: reportData.map(d => d[devices[deviceIndex]]?.value ?? null)
+        },
+        {
+          name: `${deviceNames[deviceIndex]} ${stringAdd}`,
+          data: reportData.map(d => d[devices[deviceIndex]]?.setValue ?? null)
+        }
+      ];
+    });
+  }
+  
+  const createChartSeriesOptions = (id, deviceNumList, stringAdd) => {
+    const tempChart1Series = tempChartSeries(deviceNumList, stringAdd);
+  
+    const tempChart1Options = {
+      chart: {
+        type: "line",
+        id: id, 
+        toolbar: {
+          show: true, 
+          tools: {
+            download: false 
+          }
+        },
+        zoom: {
+          enabled: true,
+          type: "x"
+        },
+        events: {
+          zoomed: function (chartContext, { xaxis }) {
+            handleZoomSync(id, xaxis);
+          },
+        },
+      },
+      colors: ["#e60000", "#fc8482", "#36ac2b", "#a7ff9f", "#1344d1", "#a6c6ff", "#3f1a91", "#c9b4f6"],
+      dataLabels: {
+        enabled: false
+      },
+      stroke: {
+        curve: "smooth",
+        width: 2,
+        dashArray: Array(tempChart1Series.length)
+          .fill(0)
+          .map((_, index) => (index % 2 === 0 ? 0 : 5))
+      },
+      title: {
+        text: `Nhiệt độ đạt được của 3 thiết bị tủ ${cabinetId.length === 0 ? "MD08" : cabinetId[0]}`,
+        align: "left",
+        style: {
+          fontSize: isMobile ? '10px' : '16px', 
+          fontWeight: 'bold', 
+          fontFamily: 'Roboto', 
+          color: '#333',
+        }
+      },
+      subtitle: {
+        text: `Từ ${dayWOStart} đến ${dayWOEnd}`,
+        align: "left",
+        style: {
+          fontSize: isMobile ? '10px' : '16px', 
+          fontWeight: 'bold', 
+          fontFamily: 'Roboto', 
+          color: '#333',
+        }
+      },
+      grid: {
+        borderColor: "#e7e7e7",
+        row: {
+          colors: ["#f3f3f3", "transparent"],
+          opacity: 0.5
+        }
+      },
+      xaxis: {
+        categories: reportData.map(d => d.timestamp),
+        type: "category",
+        title: {
+          text: "Time",
+          align: "left",
+          style: {
+            fontSize: isMobile ? '12px': '16px', 
+            fontWeight: 'bold', 
+            fontFamily: 'Roboto', 
+            color: '#333',
+          }
+        }
+      },
+      yaxis: {
+        min: 0,
+        title: {
+          text: "Temperature (°C)",
+          style: {
+            fontSize: isMobile ? '12px': '16px', 
+            fontWeight: 'bold', 
+            fontFamily: 'Roboto', 
+            color: '#333',
+          }
+        }
+      },
+      legend: {
+        position: "top"
+      },
+      tooltip: {
+        enabled: true,
+        custom: function({ series, seriesIndex, dataPointIndex, w }) {
+          let tooltipContent = "<div style='padding: 10px;'>";
+    
+          let seriesData = w.config.series.map((seriesItem, index) => {
+            return {
+              name: seriesItem.name,
+              value: series[index][dataPointIndex],
+              color: w.config.colors[index]
+            };
+          });
+          seriesData.sort((a, b) => b.value - a.value);
+    
+          seriesData.forEach(item => {
+            tooltipContent += `
+              <div>
+                <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${item.color}; margin-right: 8px;"></span>
+                <strong>${item.name}:</strong> 
+                ${item.value === null 
+                    ? "Không có dữ liệu" 
+                    : (item.value === -1 
+                        ? "Thiết bị đã bị tắt" 
+                        : item.value.toFixed(2) + " °C"
+                    )
+                }            
+              </div>
+            `;
+          });
+    
+          tooltipContent += "</div>";
+          return tooltipContent;
+        }
+      }
+    };
+  
+    return [ tempChart1Series, tempChart1Options ];
+  }
+
   const isDayEndAfterDayStart = (dayStart, dayEnd) => {
     const convertToISO = (dateStr) => {
       const [month, day, rest] = dateStr.split("-");
@@ -663,7 +650,6 @@ const POV = () => {
     return formattedData;
 };
 
-
   const convertToISOFormat= (dateTime) => {
     if (!dateTime || typeof dateTime !== "string") {
       // console.error("Dữ liệu đầu vào không hợp lệ:", dateTime);
@@ -689,7 +675,7 @@ const POV = () => {
     //     toast.error(`Vui lòng nhập đầy đủ thông tin: ${missingFields.join(", ")}`);
     //     return;
     // }
-    // console.log(startTime, endTime, isDayEndAfterDayStart(startTime, endTime))
+    console.log(startTime, endTime, isDayEndAfterDayStart(startTime, endTime))
     if ((!isDayEndAfterDayStart(startTime, endTime))) {
       toast.error("Thời gian bắt đầu phải trước thời gian kết thúc");
       return;
@@ -698,9 +684,9 @@ const POV = () => {
     if (!Array.isArray(devices)) {
       toast.error("Không có thiết bị nào");
       // console.log("error array")
-      // console.log(devices)
     }
     try {
+      if (reportType[0] === "fanTemp") {
       let stack = [];
       const apiCalls = devices.map((deviceId) =>
           new Promise((resolve) => {
@@ -943,18 +929,62 @@ const POV = () => {
           // setReportData(updatedReportData);
           // console.log(updatedReportData);
       });
+      setShowDiameterGraphs(false);
+      setShowGraphs(true);
+      // if (connection.state === 'Connected') {
+      //   const data = await connection.invoke('SendAll');
+      //   const parsedData = JSON.parse(data);
+      //   const setValueHeatControllerData = [];
+      //   parsedData.forEach(item => {
 
-      if (connection.state === 'Connected') {
-        const data = await connection.invoke('SendAll');
-        const parsedData = JSON.parse(data);
-        const setValueHeatControllerData = [];
-        parsedData.forEach(item => {
-
-        if (item.MessageType === "SetValue" && item.DeviceId.includes("HeatController")) {
-            setValueHeatControllerData.push(item);
-        }
-        });
-        setSetPoint(setValueHeatControllerData);
+      //   if (item.MessageType === "SetValue" && item.DeviceId.includes("HeatController")) {
+      //       setValueHeatControllerData.push(item);
+      //   }
+      //   });
+      //   setSetPoint(setValueHeatControllerData);
+      // }
+      }
+      else if (reportType[0] === "diameter") {
+        const apiCalls = [
+          new Promise((resolve) => {
+              callApi(
+                  () => shotApi.getWireDiameterRecords(cabinetId[0], startTime, endTime),
+                  (data) => {
+                      if (Array.isArray(data)) {
+                          resolve(data);
+                      } else {
+                          toast.error("Lỗi dữ liệu");
+                          resolve([]);
+                      }
+                  }
+              );
+          })
+        ];
+        Promise.all(apiCalls).then((results) => {
+          // console.log(results[0]);
+          const transformedData = results[0].reduce((acc, item) => {
+            Object.keys(item).forEach(key => {
+              if (key === 'lineId') return;
+              if (!acc[key]) {
+                acc[key] = [];
+              }
+              acc[key].push(item[key]);
+            });
+            return acc;
+          }, {});
+          Object.keys(transformedData).forEach(key => {
+            if (key === 'timestamp') return;
+            transformedData[key] = transformedData[key].map(value => value === -1 ? null : value);
+          });
+          transformedData.timestamp = transformedData.timestamp.map(t => {
+            const [date, time] = t.split('T');
+            return `${date} ${time.substring(0, 5)}`;
+          });
+          console.log(transformedData);
+          setReportDiameterData(transformedData);
+          setShowDiameterGraphs(true);
+          setShowGraphs(false);
+        }); 
       }
     } 
     catch (error) {
@@ -962,40 +992,38 @@ const POV = () => {
     } finally {
         setLoading(false);
     }
-    setShowGraphs(true);
   };
-
-  const handleExportdata = async (CabinetId, WorkOrder, Customer, Enamel, Size, StartTime, EndTime, StartAt, EndAt) => {
-    const missingFields = [];
-    if (!CabinetId) missingFields.push("Mã tủ");
-    if (!WorkOrder) missingFields.push("Lệnh sản xuất");
-    if (!Customer) missingFields.push("Khách hàng");
-    if (!Enamel) missingFields.push("Loại men");
-    if (!Size) missingFields.push("Kích thước dây");
-    if (!StartTime) missingFields.push("Ngày bắt đầu lệnh");
-    if (!EndTime) missingFields.push("Ngày kết thúc lệnh");
-    if (!StartAt) missingFields.push("Bắt đầu");
-    if (!EndAt) missingFields.push("Kết thúc");
-
+  
+  const handleExportdata = async (CabinetId, WorkOrder, Customer, Enamel, Size, StartTime, EndTime, StartAt, EndAt, reportType, DayWork) => {
+    console.log(DayWork)
+    
     if ((!isDayEndAfterDayStart(StartTime, EndTime)) || (!isDayEndAfterDayStart(StartAt, EndAt))) {
       toast.error("Thời gian bắt đầu phải trước thời gian kết thúc");
       return;
     }
 
-    if (missingFields.length > 0) {
-        toast.error(`Vui lòng nhập đầy đủ thông tin: ${missingFields.join(", ")}`);
-        return;
-    }
-
-    if (isNaN(Size)) {
-        toast.error("Kích thước dây phải là một số!");
-        return;
-    }
-
-
-
     setLoading(true);
     try {
+      if (reportType === "fanTemp") {
+        const missingFields = [];
+        if (!CabinetId) missingFields.push("Mã tủ");
+        if (!WorkOrder) missingFields.push("Lệnh sản xuất");
+        if (!Customer) missingFields.push("Khách hàng");
+        if (!Enamel) missingFields.push("Loại men");
+        if (!Size) missingFields.push("Kích thước dây");
+        if (!StartTime) missingFields.push("Ngày bắt đầu lệnh");
+        if (!EndTime) missingFields.push("Ngày kết thúc lệnh");
+        if (!StartAt) missingFields.push("Bắt đầu");
+        if (!EndAt) missingFields.push("Kết thúc");
+        if (!reportType) missingFields.push("Loại báo cáo");
+        if (missingFields.length > 0) {
+            toast.error(`Vui lòng nhập đầy đủ thông tin: ${missingFields.join(", ")}`);
+            return;
+        }
+        if (isNaN(Size)) {
+            toast.error("Kích thước dây phải là một số!");
+            return;
+        }
         const postData = {
           cabinetId: CabinetId[0],
           workOrder: WorkOrder,
@@ -1037,6 +1065,120 @@ const POV = () => {
             a.click();
             a.remove();
         }
+      }
+      else if (reportType === "diameter") {
+        const missingFields = [];
+        if (!CabinetId) missingFields.push("Mã tủ");
+        if (!WorkOrder) missingFields.push("Lệnh sản xuất");
+        if (!Customer) missingFields.push("Khách hàng");
+        if (!maxStandard) missingFields.push("Tiêu chuẩn max");
+        if (!minStandard) missingFields.push("Tiêu chuẩn min");
+        if (!Size) missingFields.push("Kích thước dây");
+        if (!StartTime) missingFields.push("Ngày bắt đầu lệnh");
+        if (!EndTime) missingFields.push("Ngày kết thúc lệnh");
+        if (!StartAt) missingFields.push("Bắt đầu");
+        if (!EndAt) missingFields.push("Kết thúc");
+        if (!reportType) missingFields.push("Loại báo cáo");
+        if (!diameterSpeed) missingFields.push("Tốc độ");
+        if (!ingredient) missingFields.push("Nguyên liệu");
+
+        if (missingFields.length > 0) {
+            toast.error(`Vui lòng nhập đầy đủ thông tin: ${missingFields.join(", ")}`);
+            return;
+        }
+        if (isNaN(Size)) {
+            toast.error("Kích thước dây phải là một số!");
+            return;
+        }
+        if (isNaN(maxStandard)) {
+          toast.error("Tiêu chuẩn max phải là một số!");
+          return;
+        }
+        if (isNaN(minStandard)) {
+          toast.error("Tiêu chuẩn max phải là một số!");
+          return;
+        }
+        if (isNaN(diameterSpeed)) {
+          toast.error("Tốc độ phải là một số!");
+          return;
+        }
+        // if (ingredient !== "AL" || ingredient !== "CU") {
+        //   toast.error("Nguyên liệu không hợp lệ");
+        //   return;
+        // }
+        const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/WireDiameterRecords/Export?LineId=${CabinetId}&Customer=${Customer}&Size=${Size}&StartAt=${StartTime.replace("T", " ")}&EndAt=${EndTime.replace("T", " ")}&MinDiameter=${minStandard}&MaxDiameter=${maxStandard}&LSX=${WorkOrder}`;
+        console.log(url);
+        const getResponse = await fetch(url, { method: "GET" });
+        if (getResponse.ok) {
+            const blob = await getResponse.blob();
+            const downloadUrl = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = downloadUrl;
+            a.download = "TienThinh-Diameter-report.xlsx";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        }
+      }
+      else if (reportType === "lear") {
+        const missingFields = [];
+        if (!CabinetId) missingFields.push("Mã tủ");
+        if (!WorkOrder) missingFields.push("Lệnh sản xuất");
+        if (!Size) missingFields.push("Kích thước dây");
+        if (!StartTime) missingFields.push("Ngày bắt đầu lệnh");
+        if (!EndTime) missingFields.push("Ngày kết thúc lệnh");
+        if (!StartAt) missingFields.push("Bắt đầu");
+        if (!EndAt) missingFields.push("Kết thúc");
+        if (!reportType) missingFields.push("Loại báo cáo");
+
+
+        if (missingFields.length > 0) {
+            toast.error(`Vui lòng nhập đầy đủ thông tin: ${missingFields.join(", ")}`);
+            return;
+        }
+        if (isNaN(Size)) {
+            toast.error("Kích thước dây phải là một số!");
+            return;
+        }
+        const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/LearMachineReports/Export?WorkOrder=${WorkOrder}&LineId=${CabinetId}&Size=${Size}&&StartAt=${StartTime.replace("T", " ")}&EndAt=${EndTime.replace("T", " ")}`;
+        console.log(url);
+        const getResponse = await fetch(url, { method: "GET" });
+        if (getResponse.ok) {
+            const blob = await getResponse.blob();
+            const downloadUrl = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = downloadUrl;
+            a.download = "TienThinh-Lear-report.xlsx";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        }
+      }
+      else if (reportType === "fanTempDaily") {
+        const missingFields = [];
+        if (!CabinetId) missingFields.push("Mã tủ");
+        if (!reportType) missingFields.push("Loại báo cáo");
+        if (!DayWork) missingFields.push("Ngày báo cáo");
+        if (missingFields.length > 0) {
+            toast.error(`Vui lòng nhập đầy đủ thông tin: ${missingFields.join(", ")}`);
+            return;
+        }
+        const [year, month, day] = DayWork.split('-');
+        const DayWorkFormated = `${day}-${month}-${year}`;
+        const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Cabinets/DailyReport?Date=${DayWorkFormated}&LineId=${CabinetId}`;
+        console.log(url);
+        const getResponse = await fetch(url, { method: "GET" });
+        if (getResponse.ok) {
+            const blob = await getResponse.blob();
+            const downloadUrl = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = downloadUrl;
+            a.download = "TienThinh-fantempDaily-report.xlsx";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        }
+      }
     } catch (error) {
         toast.error(error.message);
     } finally {
@@ -1087,8 +1229,8 @@ const POV = () => {
   // console.log(dayStart)
   // console.log(dayEnd)
   // console.log(dayWOStart)
-  // console.log(dayWOEnd)
-  // console.log(setPoint)
+  console.log(reportType)
+  // console.log(reportDiameterData)
 
   return (
   <div className="flex h-screen overflow-hidden w-full">
@@ -1108,18 +1250,42 @@ const POV = () => {
 
         <div className="flex w-full" style={ isMobile ? {fontSize: "0.7rem"} : {fontSize: "1.1rem"}}>
         <Card className="relative p-1 w-full max-w-screen-lg">
-          <div className="w-[90%]">
+
+        <div className="flex-container">
+        <div className="date-time-input">
+          <SelectInput
+                className="flex-3 mb-4"
+                label={pageIndex === 0 ? `Loại báo cáo*` : `Loại báo cáo`}
+                list={[
+                  { value: "diameter", key: "Báo cáo đường kính dây" },
+                  { value: "fanTemp", key: "Báo cáo thông số nhiệt + quạt"},
+                  ...(pageIndex !== 1 ? [{ value: "fanTempDaily", key: "Báo cáo thông số nhiệt + quạt (hằng ngày)" }] : []),
+                  { value: "lear", key: "Báo cáo máy soi lỗ kim" },
+                ]}
+                value={reportType}
+                setValue={setReportType}
+          />
+          </div>
+          <div className="date-time-input">
             <SelectInput
+                className="flex-1 mb-4"
                 label={pageIndex === 0 ? `Chọn mã tủ*` : `Chọn mã tủ`}
                 list={[
                   { value: "MD08", key: "MD08" },
+                  // { value: "MD02", key: "MD02" },
+                  // { value: "MD06", key: "MD06" },
+                  // { value: "MD04", key: "MD04" },
+                  // { value: "MD01", key: "MD01" },
                 ]}
                 value={cabinetId}
                 setValue={setCabinetId}
             />
           </div>
 
-        {pageIndex === 0 && 
+        </div>
+
+
+        {pageIndex === 0 && reportType[0] !== "fanTempDaily" &&
           <div className="flex-container">
           <div className="date-time-input">
             <DateTimeInput
@@ -1142,6 +1308,33 @@ const POV = () => {
             />
           </div>
         </div>
+        }
+        {reportType[0] === "fanTempDaily" && pageIndex !== 1  &&
+          <div className="flex-container">
+            <div className="date-time-input">
+            <DateInput
+              label="Ngày: "
+              value={dayWork}
+              setValue={setDayWork}
+              // type="timeEnd"
+              className="flex-1 mb-4"
+            />
+            </div>
+            <div className="date-time-input">
+            <SelectInput
+                className="flex-2 mb-4"
+                label={pageIndex === 0 ? `Chọn ca*` : `Chọn ca`}
+                list={[
+                  { value: "morning", key: "Ca 1 (6h30 - 14h30)" },
+                  { value: "afternoon", key: "Ca 2 (14h30 - 22h30)" },
+                  { value: "night", key: "Ca 3 (22h30 - 6h30)" },
+                  { value: "alltime", key: "Cả 3 ca" },
+                ]}
+                value={cabinetId}
+                setValue={setCabinetId}
+            />
+            </div>
+          </div>
         }
 
         {pageIndex !== 0 && 
@@ -1169,7 +1362,7 @@ const POV = () => {
           </div>
         }
 
-        {(pageIndex ===0 || pageIndex ===2) && <div className="flex p-1 gap-1">
+        {reportType[0] !== 'fanTempDaily'&& (pageIndex ===0 || pageIndex ===2) && <div className="flex p-1 gap-1">
         <TextInput
             className="flex-1 h-[64px]"
             label={pageIndex === 0 ? "Lệnh sản xuất*" : "Lệnh sản xuất"}
@@ -1186,7 +1379,8 @@ const POV = () => {
         />
         </div>}
 
-        {(pageIndex ===0 || pageIndex ===2) && <div className="flex p-1 gap-1">
+        {reportType[0] !== 'fanTempDaily'&& (pageIndex ===0 || pageIndex ===2) && 
+        <div className="flex p-1 gap-1">
         <TextInput
             className="flex-1 h-[64px]"
             label={pageIndex === 0 ? "Kích thước dây*" : "Kích thước dây"}
@@ -1202,11 +1396,43 @@ const POV = () => {
             placeholder="(...ABC)"
         />
         </div> }
+
+        {(reportType[0] === 'diameter' && (pageIndex ===0 || pageIndex ===2)) && 
+        <div className="flex p-1 gap-1">
+        <TextInput
+            className="flex-1 h-[64px]"
+            label={pageIndex === 0 ? "Tiêu chuẩn max*" : "Tiêu chuẩn max"}
+            value={maxStandard}
+            setValue={setMaxStandard}
+            placeholder="(0.22)"
+        />
+        <TextInput
+            className="flex-1 h-[64px]"
+            label={pageIndex === 0 ? "Tiêu chuẩn min*" : "Tiêu chuẩn min"}
+            value={minStandard}
+            setValue={setMinStandard}
+            placeholder="(0.22)"
+        />
+        <TextInput
+            className="flex-1 h-[64px]"
+            label={pageIndex === 0 ? "Tốc độ*" : "Tốc độ"}
+            value={diameterSpeed}
+            setValue={setDiameterSpeed}
+            placeholder="(200)"
+        />
+        <TextInput
+            className="flex-1 h-[64px]"
+            label={pageIndex === 0 ? "Nguyên liệu*" : "Nguyên liệu"}
+            value={ingredient}
+            setValue={setIngredient}
+            placeholder="(AL hoặc CU)"
+        />
+        </div> }
         </Card> 
         </div>
 
         {pageIndex ===0 && <div className="absolute bottom-4 right-8 flex gap-2">
-        <Button onClick={() =>handleExportdata(cabinetId, workOrder, customer, enamel, size, dayStart, dayEnd, dayWOStart, dayWOEnd)}> 
+        <Button onClick={() =>handleExportdata(cabinetId, workOrder, customer, enamel, size, dayStart, dayEnd, dayWOStart, dayWOEnd, reportType[0], dayWork)}> 
           Export
         </Button>
         </div>}
@@ -1220,13 +1446,19 @@ const POV = () => {
 
         {pageIndex === 1 && showGraphs && (
           <div className="flex flex-col items-center w-full gap-5 font-roboto py-10">
-            <Card className="w-[95%] ">
+            <Card className="w-[100%] ">
               <>
                 <ReactApexChart
                   ref={chartTemp1Ref}
-                  key={JSON.stringify(tempChart1Options)}
-                  options={tempChart1Options}
-                  series={tempChart1Series}
+                  key="temp1"
+                  options={createChartSeriesOptions(
+                    "tempchart1", 
+                    [9, 10, 11], 
+                    "cài đặt")[1]}
+                  series={createChartSeriesOptions(
+                    "tempchart1", 
+                    [9, 10, 11], 
+                    "cài đặt")[0]}
                   type="line"
                   height={400}
                 />
@@ -1238,13 +1470,19 @@ const POV = () => {
               </>
             </Card>
 
-            <Card className="w-[95%] ">
+            <Card className="w-[100%] ">
               <>
                 <ReactApexChart
                   ref={chartTemp2Ref}
-                  key={JSON.stringify(tempChart2Options)}
-                  options={tempChart2Options}
-                  series={tempChart2Series}
+                  key="temp2"
+                  options={createChartSeriesOptions(
+                    "tempchart2", 
+                    [5, 6, 7, 8], 
+                    "cài đặt")[1]}
+                  series={createChartSeriesOptions(
+                    "tempchart2", 
+                    [5, 6, 7, 8], 
+                    "cài đặt")[0]}
                   type="line"
                   height={400}
                 />
@@ -1256,7 +1494,7 @@ const POV = () => {
               </>
             </Card>
 
-            <Card className="w-[95%] ">
+            <Card className="w-[100%] ">
               <>
                 <ReactApexChart
                   ref={chartFanRef}
@@ -1274,6 +1512,90 @@ const POV = () => {
               </>
             </Card>
            
+          </div>
+        )}
+
+        {pageIndex === 1 && showDiameterGraphs && (
+          <div className="flex flex-col items-center w-full gap-5 py-10">
+            <Card className="w-[100%] ">
+              <>
+                <ReactApexChart
+                  ref={chartTemp1Ref}
+                  key="diameters1"
+                  options={createDiameterChartSeriesOptions(
+                    "diameters1", reportDiameterData, 1, 6)[1]}
+                  series={createDiameterChartSeriesOptions(
+                    "diameters1", reportDiameterData, 1, 6)[0]}
+                  type="line"
+                  height={400}
+                />
+                <div className="flex justify-end">
+                <Button className="" onClick={() =>handleDownloadPNG(chartTemp1Ref)}>
+                  Tải PNG
+                </Button>  
+                </div>            
+              </>
+            </Card>
+
+            <Card className="w-[100%] ">
+              <>
+                <ReactApexChart
+                  ref={chartTemp2Ref}
+                  key="diameters2"
+                  options={createDiameterChartSeriesOptions(
+                    "diameters2", reportDiameterData, 7, 6)[1]}
+                  series={createDiameterChartSeriesOptions(
+                    "diameters2", reportDiameterData, 7, 6)[0]}
+                  type="line"
+                  height={400}
+                />
+                <div className="flex justify-end">
+                <Button className="" onClick={() =>handleDownloadPNG(chartTemp1Ref)}>
+                  Tải PNG
+                </Button>  
+                </div>            
+              </>
+            </Card>   
+
+            <Card className="w-[100%] ">
+              <>
+                <ReactApexChart
+                  ref={chartFanRef}
+                  key="diameters3"
+                  options={createDiameterChartSeriesOptions(
+                    "diameters3", reportDiameterData, 13, 6)[1]}
+                  series={createDiameterChartSeriesOptions(
+                    "diameters3", reportDiameterData, 13, 6)[0]}
+                  type="line"
+                  height={400}
+                />
+                <div className="flex justify-end">
+                <Button className="" onClick={() =>handleDownloadPNG(chartTemp1Ref)}>
+                  Tải PNG
+                </Button>  
+                </div>            
+              </>
+            </Card>  
+
+            <Card className="w-[100%] ">
+              <>
+                <ReactApexChart
+                  ref={chartFanRef}
+                  key="diameters4"
+                  options={createDiameterChartSeriesOptions(
+                    "diameters4", reportDiameterData, 19, 6)[1]}
+                  series={createDiameterChartSeriesOptions(
+                    "diameters4", reportDiameterData, 19, 6)[0]}
+                  type="line"
+                  height={400}
+                />
+                <div className="flex justify-end">
+                <Button className="" onClick={() =>handleDownloadPNG(chartTemp1Ref)}>
+                  Tải PNG
+                </Button>  
+                </div>            
+              </>
+            </Card>              
           </div>
         )}
         {/* {pageIndex ===1 && showGraphs && (

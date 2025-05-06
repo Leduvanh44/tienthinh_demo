@@ -1,6 +1,6 @@
 import { AuthForm } from '../Auth'
 import Sidebar from '../../components/Layout/components/Sidebar'
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ErrorNotification from "@/components/ErrorNotification/ErrorNotification";
 import { FaTimes } from "react-icons/fa";
 import TableCustomErr from '../../components/TableCustom/TableCustomErr';
@@ -84,6 +84,13 @@ const ErrorHistoryNotifications = () => {
   const [searchErrHistory, setSearchErrHistory] = useState([]);
   const [showDownloads, setShowDownloads] = useState(false);
   const [loading, setLoading] = useState(false);
+  const tableRef = useRef(null);
+
+  useEffect(() => {
+    if (tableRef.current) {
+      tableRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [searchErrHistory]);
 
   const toggleExpand = (id) => {
     setNotifications(notifications.map(notif =>
@@ -224,7 +231,7 @@ const ErrorHistoryNotifications = () => {
             {/* <Card className="w-[95%] "> */}
               <div className="flex flex-col items-center w-full gap-5 font-roboto py-10">
                 <>
-                <TableCustomErr data={searchErrHistory}/>
+                <TableCustomErr ref={tableRef} data={searchErrHistory}/>
                 </>
             </div>
             {/* </Card>             */}

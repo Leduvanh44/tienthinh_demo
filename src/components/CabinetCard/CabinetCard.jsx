@@ -9,7 +9,7 @@ const CabinetCard = ({ id, name, status, errors, isError, handleClickDetail, hei
     // }
     switch (status) {
       case "operating":
-        return "#64ac6c"; 
+        return "#8be879"; 
       case "stopped":
         return "#a7a7a7"; 
       default:
