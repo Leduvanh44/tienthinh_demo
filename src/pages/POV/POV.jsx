@@ -35,8 +35,8 @@ const initialDay = formatDay(now);
 const threeDaysAgo = new Date(now);
 threeDaysAgo.setDate(threeDaysAgo.getDate() - 1);
 
-const startTime = "10:00:00";
-const endTime = "11:00:00";
+const startTime = "06:30:00";
+const endTime = "06:30:00";
 
 const initialDayStart = formatDate(threeDaysAgo, startTime); 
 const initialDayEnd = formatDate(now, endTime);              
@@ -78,7 +78,7 @@ const POV = () => {
   const chartFanRef = useRef(null);
 
   const [setPoint, setSetPoint] = useState([]);
-  const [reportType, setReportType] = useState("");
+  const [reportType, setReportType] = useState(['performance']);
 
   
   useEffect(() => {
@@ -1106,7 +1106,7 @@ const POV = () => {
         //   toast.error("Nguyên liệu không hợp lệ");
         //   return;
         // }
-        const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/WireDiameterRecords/Export?LineId=${CabinetId}&Customer=${Customer}&Size=${Size}&StartAt=${StartTime.replace("T", " ")}&EndAt=${EndTime.replace("T", " ")}&MinDiameter=${minStandard}&MaxDiameter=${maxStandard}&LSX=${WorkOrder}`;
+        const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/WireDiameterRecords/Export?LineId=${CabinetId}&Customer=${Customer}&Size=${Size}&speed=${diameterSpeed}&material=${ingredient}$StartAt=${StartTime.replace("T", " ")}&EndAt=${EndTime.replace("T", " ")}&MinDiameter=${minStandard}&MaxDiameter=${maxStandard}&workorderid=${WorkOrder}`;
         console.log(url);
         const getResponse = await fetch(url, { method: "GET" });
         if (getResponse.ok) {
@@ -1164,7 +1164,7 @@ const POV = () => {
             return;
         }
         const [year, month, day] = DayWork.split('-');
-        const DayWorkFormated = `${day}-${month}-${year}`;
+        const DayWorkFormated = `${month}-${day}-${year}`;
         const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/Cabinets/DailyReport?Date=${DayWorkFormated}&LineId=${CabinetId}`;
         console.log(url);
         const getResponse = await fetch(url, { method: "GET" });
@@ -1174,6 +1174,30 @@ const POV = () => {
             const a = document.createElement("a");
             a.href = downloadUrl;
             a.download = "TienThinh-fantempDaily-report.xlsx";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        }
+      }
+      else if (reportType === "performance") {
+        const missingFields = [];
+        if (!reportType) missingFields.push("Loại báo cáo");
+        if (!DayWork) missingFields.push("Ngày báo cáo");
+        if (missingFields.length > 0) {
+            toast.error(`Vui lòng nhập đầy đủ thông tin: ${missingFields.join(", ")}`);
+            return;
+        }
+        const [year, month, day] = DayWork.split('-');
+        const DayWorkFormated = `${year}-${month}-${day}`;
+        const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/WireDiameterRecords/dailyreport?Date=${DayWorkFormated}`;
+        console.log(url);
+        const getResponse = await fetch(url, { method: "GET" });
+        if (getResponse.ok) {
+            const blob = await getResponse.blob();
+            const downloadUrl = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = downloadUrl;
+            a.download = "TienThinh-preformance-report.xlsx";
             document.body.appendChild(a);
             a.click();
             a.remove();
@@ -1252,40 +1276,49 @@ const POV = () => {
         <Card className="relative p-1 w-full max-w-screen-lg">
 
         <div className="flex-container">
-        <div className="date-time-input">
-          <SelectInput
-                className="flex-3 mb-4"
-                label={pageIndex === 0 ? `Loại báo cáo*` : `Loại báo cáo`}
-                list={[
-                  { value: "diameter", key: "Báo cáo đường kính dây" },
-                  { value: "fanTemp", key: "Báo cáo thông số nhiệt + quạt"},
-                  ...(pageIndex !== 1 ? [{ value: "fanTempDaily", key: "Báo cáo thông số nhiệt + quạt (hằng ngày)" }] : []),
-                  { value: "lear", key: "Báo cáo máy soi lỗ kim" },
-                ]}
-                value={reportType}
-                setValue={setReportType}
-          />
-          </div>
           <div className="date-time-input">
             <SelectInput
-                className="flex-1 mb-4"
-                label={pageIndex === 0 ? `Chọn mã tủ*` : `Chọn mã tủ`}
-                list={[
-                  { value: "MD08", key: "MD08" },
-                  // { value: "MD02", key: "MD02" },
-                  // { value: "MD06", key: "MD06" },
-                  // { value: "MD04", key: "MD04" },
-                  // { value: "MD01", key: "MD01" },
-                ]}
-                value={cabinetId}
-                setValue={setCabinetId}
+                  className="flex-3"
+                  label={pageIndex === 0 ? `Loại báo cáo*` : `Loại báo cáo`}
+                  list={[
+                    { value: "diameter", key: "Báo cáo đường kính dây" },
+                    { value: "fanTemp", key: "Báo cáo thông số nhiệt + quạt"},
+                    ...(pageIndex !== 1 ? [{ value: "fanTempDaily", key: "Báo cáo thông số nhiệt + quạt (hằng ngày)" }] : []),
+                    ...(pageIndex !== 1 ? [{ value: "lear", key: "Báo cáo máy soi lỗ kim" }]: []),
+                    ...(pageIndex !== 1 ? [{ value: "performance", key: "Báo cáo hiệu suất" }] : []),
+                  ]}
+                  value={reportType}
+                  setValue={setReportType}
             />
-          </div>
 
+          </div>
+            
+            {reportType[0] !== 'performance' ? (<div className="date-time-input">
+              <SelectInput
+                  className="flex-1"
+                  label={pageIndex === 0 ? `Chọn mã tủ*` : `Chọn mã tủ`}
+                  list={[
+                    { value: "MD08", key: "MD08" },
+                    // { value: "MD02", key: "MD02" },
+                    // { value: "MD06", key: "MD06" },
+                    // { value: "MD04", key: "MD04" },
+                    // { value: "MD01", key: "MD01" },
+                  ]}
+                  value={cabinetId}
+                  setValue={setCabinetId}
+              />
+            </div>) : 
+            (<div className="date-time-input"><DateInput
+              label="Ngày: "
+              value={dayWork}
+              setValue={setDayWork}
+              // type="timeEnd"
+              className="flex-3"
+            /></div>)}
         </div>
 
 
-        {pageIndex === 0 && reportType[0] !== "fanTempDaily" &&
+        {pageIndex === 0 && reportType[0] !== "fanTempDaily" && reportType[0] !== "performance" &&
           <div className="flex-container">
           <div className="date-time-input">
             <DateTimeInput
@@ -1309,7 +1342,7 @@ const POV = () => {
           </div>
         </div>
         }
-        {reportType[0] === "fanTempDaily" && pageIndex !== 1  &&
+        {(reportType[0] === "fanTempDaily") && pageIndex !== 1  &&
           <div className="flex-container">
             <div className="date-time-input">
             <DateInput
@@ -1317,10 +1350,10 @@ const POV = () => {
               value={dayWork}
               setValue={setDayWork}
               // type="timeEnd"
-              className="flex-1 mb-4"
+              className="mb-4"
             />
             </div>
-            <div className="date-time-input">
+            {/* <div className="date-time-input">
             <SelectInput
                 className="flex-2 mb-4"
                 label={pageIndex === 0 ? `Chọn ca*` : `Chọn ca`}
@@ -1333,7 +1366,7 @@ const POV = () => {
                 value={cabinetId}
                 setValue={setCabinetId}
             />
-            </div>
+            </div> */}
           </div>
         }
 
@@ -1362,7 +1395,7 @@ const POV = () => {
           </div>
         }
 
-        {reportType[0] !== 'fanTempDaily'&& (pageIndex ===0 || pageIndex ===2) && <div className="flex p-1 gap-1">
+        {reportType[0] !== "performance" && reportType[0] !== 'fanTempDaily'&& (pageIndex ===0 || pageIndex ===2) && <div className="flex p-1 gap-1">
         <TextInput
             className="flex-1 h-[64px]"
             label={pageIndex === 0 ? "Lệnh sản xuất*" : "Lệnh sản xuất"}
@@ -1379,7 +1412,7 @@ const POV = () => {
         />
         </div>}
 
-        {reportType[0] !== 'fanTempDaily'&& (pageIndex ===0 || pageIndex ===2) && 
+        {reportType[0] !== "performance" && reportType[0] !== 'fanTempDaily'&& (pageIndex ===0 || pageIndex ===2) && 
         <div className="flex p-1 gap-1">
         <TextInput
             className="flex-1 h-[64px]"

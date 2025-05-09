@@ -362,6 +362,7 @@ const Dashboard = () => {
   const [nonManufacturingTime, setNonManufacturingTime] = useState([]);
   const [preHs, setPreHs] = useState([]);
   const [dayInitial, setDayInitial] = useState('');
+  const [preDayInitial, setPreDayInitial] = useState('');
   const [totalLine, setTotalLine] = useState(0);
   const [totalnonManufacturingTime, setTotalnonManufacturingTime] = useState(0.0);
   const [hs, setHs] = useState(0.0);
@@ -395,6 +396,11 @@ const Dashboard = () => {
     const formatted = formatLocalDate(resultDate);
     console.log("dayInitial: ", formatted);
     setDayInitial(formatted);
+    const date = new Date(formatted);
+    date.setDate(date.getDate() - 1);
+    const result = date.toISOString().split("T")[0];
+    console.log(result);
+    setPreDayInitial(result);
   }, []);
 
   useEffect(() => {
@@ -1119,12 +1125,18 @@ const Dashboard = () => {
 
   const totalOperatingTime = 24 * totalLine;
   const totalInactiveTime = totalnonManufacturingTime;
-  const now = new Date();
-  const todayAt630 = new Date();
+  let now = new Date();
+  let todayAt630 = new Date();
   todayAt630.setHours(6, 30, 0, 0);
+  
+  if (now < todayAt630) {
+    todayAt630.setDate(todayAt630.getDate() - 1);
+  }
+  
+  now = new Date();
   const elapsedHoursSince630 = (now - todayAt630) * 24 / (1000 * 60 * 60);
   const remainingTime = (elapsedHoursSince630 - totalInactiveTime).toFixed(1);
-  console.log((preHs[0]?.TagValue ?? 0 ) * totalOperatingTime)
+  console.log("lmao:",remainingTime)
   const hsSeries = [
     {
       name: 'Thời gian máy HĐ',
@@ -1133,7 +1145,7 @@ const Dashboard = () => {
     {
       name: 'Thời gian máy HĐ thực tế',
       data: [
-        ((preHs[0]?.TagValue ?? 0) * totalOperatingTime).toFixed(1),
+        ((preHs[0]?.TagValue ?? 0 < 0 ? 0.0 :preHs[0]?.TagValue ?? 0) * totalOperatingTime).toFixed(1),
         remainingTime,
       ],
     },
@@ -1151,29 +1163,38 @@ const Dashboard = () => {
       type: 'bar',
       stacked: true,
       toolbar: { show: true },
-      dataLabels: {
-        position: 'top',
+      // dataLabels: {
+      //   position: 'top',
+      // },
+    },
+    dataLabels: {
+      enabled: true,
+      formatter: function (val, { seriesIndex, dataPointIndex, w }) {
+        const total = w.globals.series[0][dataPointIndex];
+        const actual = w.globals.series[1][dataPointIndex];
+        const non = w.globals.series[2][dataPointIndex];
+
+        // console.log(actual)          
+        // console.log(total)
+      //   const total = w.globals.series[0][dataPointIndex];
+      //   const actual = w.globals.series[1][dataPointIndex];
+        if (seriesIndex === 0) {
+          const ratio = (actual / total) * 100;
+          return ratio.toFixed(1) + '%';
+        }
+        if (seriesIndex === 2) {
+          return non.toFixed(1) + ' h';
+        }
+        return '';
+      },
+
+      offsetY: -10,
+      style: {
+        fontSize: '12px',
+        colors: ['#000'],
       },
     },
-dataLabels: {
-  enabled: true,
-  formatter: function (val, { seriesIndex, dataPointIndex, w }) {
-    // Lấy thời gian máy HĐ (series[0]) và thời gian HĐ thực tế (series[1])
-    const total = w.globals.series[0][dataPointIndex];
-    const actual = w.globals.series[1][dataPointIndex];
-    if (seriesIndex === 1 && total) {
-      const ratio = (actual / total) * 100;
-      return ratio.toFixed(1) + '%'; // Hiển thị phần trăm hiệu suất
-    }
-    return '';
-  },
-  offsetY: -10,
-  style: {
-    fontSize: '12px',
-    colors: ['#000'],
-  },
-},
-    colors: ["#78acff", "#95f582", "#95f582", "#a7ff9f", "#1344d1", "#a6c6ff"],
+    colors: ["#78acff", "#95f582", "#bfb6b8", "#a7ff9f", "#1344d1", "#a6c6ff"],
     title: {
       text: 'Hiệu suất máy',
       style: {
@@ -1188,7 +1209,7 @@ dataLabels: {
       },
     },
     xaxis: {
-      categories: ['Ngày trước đó', 'Hiện tại'],
+      categories: [preDayInitial, dayInitial],
     },
     yaxis: {
       title: {

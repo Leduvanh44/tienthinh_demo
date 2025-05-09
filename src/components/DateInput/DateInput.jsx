@@ -17,20 +17,23 @@ function DateInput({ id, label, value, setValue, className, type, dayCompare }) 
         setFocus(false)
     }
     // useEffect(() => {
-    //     if (type == "dayStart") {
-    //         if (inputDate < dayCompare) {
-    //             setValue(inputDate)
-    //         } else {
-    //             toast.error("Ngày kết thúc phải sau ngày bắt đầu")
-    //         }
-    //     } else {
-    //         if (inputDate > dayCompare) {
-    //             setValue(inputDate)
-    //         } else {
-    //             toast.error("Ngày kết thúc phải sau ngày bắt đầu")
-    //         }
-    //     }
-    // }, [inputDate])
+    //     setInputDate(value);
+    // }, [value]);
+    useEffect(() => {
+        // if (type == "dayStart") {
+        //     if (inputDate < dayCompare) {
+                setValue(inputDate)
+        //     } else {
+        //         toast.error("Ngày kết thúc phải sau ngày bắt đầu")
+        //     }
+        // } else {
+        //     if (inputDate > dayCompare) {
+        //         setValue(inputDate)
+        //     } else {
+        //         toast.error("Ngày kết thúc phải sau ngày bắt đầu")
+        //     }
+        // }
+    }, [inputDate])
     return (
         <>
             <div

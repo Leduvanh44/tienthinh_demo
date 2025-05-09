@@ -187,9 +187,15 @@ const DetailCopperWireData = () => {
     let copperData = transformData(minWireDiameter, minWireDiameter, maxWireDiameter)
     console.log(copperData)
     const totalOperatingTime = 24 * totalLine;
-    const nowTime = new Date();
-    const todayAt630 = new Date();
+    let now = new Date();
+    let todayAt630 = new Date();
     todayAt630.setHours(6, 30, 0, 0);
+    
+    if (now < todayAt630) {
+      todayAt630.setDate(todayAt630.getDate() - 1);
+    }
+    
+    now = new Date();
     const elapsedHoursSince630 = (nowTime - todayAt630) * 24 / (1000 * 60 * 60);
     const remainingTime = (elapsedHoursSince630 - (1 - hs) * totalOperatingTime).toFixed(1);
     const hsSeries = [
