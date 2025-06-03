@@ -59,10 +59,11 @@ const ErrorHistoryNotifications = () => {
     }
   ]);
   const [isMobile, setIsMobile] = useState(false);
-
+  const [widthWeb, setWidthWeb] = useState(false);
   useEffect(() => {
     // console.log(window.innerWidth, window.innerHeight)
     const handleResize = () => {
+      setWidthWeb(window.innerWidth)
       setIsMobile(window.innerWidth <= 768);
     };
   

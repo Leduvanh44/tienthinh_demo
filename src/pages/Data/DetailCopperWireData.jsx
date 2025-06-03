@@ -184,7 +184,7 @@ const DetailCopperWireData = () => {
     });
   };
 
-    let copperData = transformData(minWireDiameter, minWireDiameter, maxWireDiameter)
+    let copperData = transformData(curWireDiameter, minWireDiameter, maxWireDiameter)
     console.log(copperData)
     const totalOperatingTime = 24 * totalLine;
     let now = new Date();
@@ -196,7 +196,7 @@ const DetailCopperWireData = () => {
     }
     
     now = new Date();
-    const elapsedHoursSince630 = (nowTime - todayAt630) * 24 / (1000 * 60 * 60);
+    const elapsedHoursSince630 = (now - todayAt630) * 24 / (1000 * 60 * 60);
     const remainingTime = (elapsedHoursSince630 - (1 - hs) * totalOperatingTime).toFixed(1);
     const hsSeries = [
       {
@@ -265,7 +265,7 @@ const DetailCopperWireData = () => {
       },
       plotOptions: {
         bar: {
-          columnWidth: '50%',
+          columnWidth: '30%',
           borderRadius: 4,
         },
       },
@@ -290,20 +290,21 @@ const DetailCopperWireData = () => {
       tooltip: {
         enabled: true,
         custom: ({ series, seriesIndex, dataPointIndex }) => {
-          const labels = ['Thời gian máy HĐ', 'Thời gian máy HĐ thực tế', 'Thời gian máy không hoạt động'];
-          let html = `<div class="my-tooltip bg-white shadow-md rounded p-2 border text-sm">`;
+          const labels = ['Máy HĐ', 'HĐ Thực tế', 'Không HĐ'];
+          const colors = ['text-blue-800', 'text-green-800', 'text-gray-500'];
+          let html = `<div class="my-tooltip font-bold bg-white text-black rounded-lg p-2 border border-gray-200 text-xs shadow-lg">`;
           labels.forEach((label, i) => {
             const value = series[i][dataPointIndex] || 0;
             html += `
-              <div class="flex justify-between gap-2">
-                <span>${label}</span>
-                <span class="font-semibold">${value.toFixed(2)}h</span>
+              <div class="flex justify-between gap-3">
+                <span class="${colors[i]}">${label}</span>
+                <span class="font-medium">${value.toFixed(1)}h</span>
               </div>`;
           });
           html += `</div>`;
           return html;
         },
-      },
+      }
   
     };
 
@@ -421,29 +422,28 @@ const DetailCopperWireData = () => {
         </div>
   
         <div className="w-[40%] shadow-lg m-2 p-5 flex flex-col">
-          {/* <div className="overflow-auto h-full">
-            <h1 className="font-roboto text-2xl font-semibold mb-6">Hiệu suất máy ngày {dayInitial}</h1>
-
-          </div> */}
-          <Card className="cursor-pointer relative" 
-          style={{ height: 'calc(100vh)' }}>
+          <Card
+            className="cursor-pointer relative overflow-y-auto"
+            style={{ height: 'calc(100vh)' }}
+          >
             <h1 className="font-roboto text-xl font-semibold">Hiệu suất và sản lượng</h1>
+
             <div className="flex items-center justify-center mb-4">
               <img
-                src="/diameter_removebg.png"
-                className="w-[60%] sm:w-1/2 px-2 py-2"
+                src="/diameter_c.png"
+                className="w-[70%] sm:w-1/2 px-2 py-2"
                 alt="Diameter Icon"
               />
             </div>
-            <div className="flex h-full justify-between">
-            <div className="w-3/4 pr-4 flex flex-col">
-              <ReactApexChart options={hsOptions} series={hsSeries} type="bar" height="350" />
-            </div>
 
-            <div className="w-1/4 pr-4 flex flex-col">
-              <ReactApexChart options={slOptions} series={slSeries} type="bar" height="350" />
+            <div className="flex flex-col space-y-4">
+              <div className="w-full">
+                <ReactApexChart options={hsOptions} series={hsSeries} type="bar" height={300} />
+              </div>
+              <div className="w-full">
+                <ReactApexChart options={slOptions} series={slSeries} type="bar" height={300} />
+              </div>
             </div>
-          </div>
           </Card>
         </div>
 

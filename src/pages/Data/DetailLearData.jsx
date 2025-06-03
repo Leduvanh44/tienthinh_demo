@@ -91,7 +91,13 @@ const DetailLearData = () => {
           fontSize: 16,
           fontFamily: 'Roboto',
           color: '#333',
-        },
+          formatter: value => {
+            const date = new Date(value);
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${hours}:${minutes}`;
+          },
+        }
       },
       {
         type: 'category',
@@ -220,15 +226,15 @@ const DetailLearData = () => {
           bgColor: getColorFromId(rowId),
           style: {
             backgroundColor: getColorFromId(rowId),
-            border: '2px solid #333', // <- Thêm border
-            borderRadius: '6px', // Optional bo góc
+            border: '2px solid #333',
+            borderRadius: '6px',
           },
         });
   
         return acc;
       }, {})
     )
-    // Sort theo id (learMachineLine đã bỏ #) tăng dần
+    // Sort tăng dần
     .sort((a, b) => a.id.localeCompare(b.id));
   
     setFixLearData(groupedData);

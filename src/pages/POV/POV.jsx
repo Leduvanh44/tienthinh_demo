@@ -416,7 +416,7 @@ const POV = () => {
                     ? "Không có dữ liệu" 
                     : (item.value === -1 
                         ? "line đã bị tắt" 
-                        : item.value.toFixed(3) + " °C"
+                        : item.value.toFixed(3) + " mm"
                     )
                 }            
               </div>
@@ -992,6 +992,7 @@ const POV = () => {
     } finally {
         setLoading(false);
     }
+    setLoading(false);
   };
   
   const handleExportdata = async (CabinetId, WorkOrder, Customer, Enamel, Size, StartTime, EndTime, StartAt, EndAt, reportType, DayWork) => {
@@ -1106,7 +1107,7 @@ const POV = () => {
         //   toast.error("Nguyên liệu không hợp lệ");
         //   return;
         // }
-        const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/WireDiameterRecords/Export?LineId=${CabinetId}&Customer=${Customer}&Size=${Size}&speed=${diameterSpeed}&material=${ingredient}$StartAt=${StartTime.replace("T", " ")}&EndAt=${EndTime.replace("T", " ")}&MinDiameter=${minStandard}&MaxDiameter=${maxStandard}&workorderid=${WorkOrder}`;
+        const url = `${import.meta.env.VITE_SERVER_ADDRESS}/api/WireDiameterRecords/Export?LineId=${CabinetId}&Customer=${Customer}&Size=${Size}&speed=${diameterSpeed}&material=${ingredient}&StartAt=${StartTime.replace("T", " ")}&EndAt=${EndTime.replace("T", " ")}&MinDiameter=${minStandard}&MaxDiameter=${maxStandard}&workorderid=${WorkOrder}`;
         console.log(url);
         const getResponse = await fetch(url, { method: "GET" });
         if (getResponse.ok) {

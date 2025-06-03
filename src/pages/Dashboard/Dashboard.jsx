@@ -17,8 +17,10 @@ import { Scheduler } from '@bitnoi.se/react-scheduler';
 import isBetween from "dayjs/plugin/isBetween";
 import "@bitnoi.se/react-scheduler/dist/style.css";
 import { StyledSchedulerFrame } from './styles';
-dayjs.extend(isBetween);
+import ChartHs from "../../components/TableCustom/ChartHs";
+import ChartSl from "../../components/TableCustom/ChartSl";
 import ReactECharts from 'echarts-for-react';
+dayjs.extend(isBetween);
 
 const formatDate = (date) => {
   const yyyy = date.getFullYear();
@@ -43,7 +45,8 @@ const Dashboard = () => {
   const [learData, setLearData] = useState([]);
   const [fixLearData, setFixLearData] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
-
+  const [zoomScheduler, setZoomScheduler] = useState(0);
+  
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768 || window.innerHeight <= window.innerWidth);
@@ -54,6 +57,7 @@ const Dashboard = () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
 
   const getChartOption = defects => ({
     tooltip: {
@@ -95,7 +99,13 @@ const Dashboard = () => {
           fontSize: 16,
           fontFamily: 'Roboto',
           color: '#333',
-        },
+          formatter: value => {
+            const date = new Date(value);
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${hours}:${minutes}`;
+          },
+        }
       },
       {
         type: 'category',
@@ -148,7 +158,7 @@ const Dashboard = () => {
         lineStyle: { width: 2 },
         itemStyle: { color: '#0f175e' },
         data: defects.map(d => [d.time, d.pinhole]),
-        xAxisIndex: 0, 
+        xAxisIndex: 0, // sử dụng trục time
       },
     ],
   });
@@ -163,7 +173,7 @@ const Dashboard = () => {
   }, [callApi])
 
   useEffect(() => {
-    getLearDataList()
+    getLearDataList();
   }, [getLearDataList])
 
   const getColorFromId = (id) => {
@@ -234,7 +244,7 @@ const Dashboard = () => {
       }, {})
     )
     .sort((a, b) => a.id.localeCompare(b.id));
-  
+    console.log("groupedData:", groupedData);
     setFixLearData(groupedData);
   }, [learData]);
   
@@ -1137,27 +1147,53 @@ const Dashboard = () => {
   const elapsedHoursSince630 = (now - todayAt630) * 24 / (1000 * 60 * 60);
   const remainingTime = (elapsedHoursSince630 - totalInactiveTime).toFixed(1);
   console.log("lmao:",remainingTime)
+
+
+  const dataHs = [
+    {
+      name: preDayInitial,
+      'TG máy HĐ': Number(totalOperatingTime.toFixed(1)),
+      'TG máy HĐ thực tế': Number(((Number(preHs[0]?.TagValue ?? 0) * totalOperatingTime).toFixed(1))),
+      'TG máy không HĐ': Number(((1 - Number(preHs[0]?.TagValue ?? 0)) * totalOperatingTime).toFixed(1)),
+      'Hiệu suất': Number(((Number(preHs[0]?.TagValue ?? 0) * 100).toFixed(1)))
+    },
+    {
+      name: dayInitial,
+      'TG máy HĐ': Number(totalOperatingTime.toFixed(1)),
+      'TG máy HĐ thực tế': Number(Number(remainingTime).toFixed(1)),
+      'TG máy không HĐ': Number(Number(totalInactiveTime).toFixed(1)),
+      'Hiệu suất': Number(((Number(remainingTime) * 100 / Number(totalOperatingTime)).toFixed(1)))
+    }
+  ];
+  const dataSl = [
+    {
+      name: dayInitial,
+      'SL 24h': 0,
+      'SL thực tế': 0,
+      'SL thất thoát': 0,
+    },
+  ];
+
   const hsSeries = [
     {
-      name: 'Thời gian máy HĐ',
+      name: 'TG máy HĐ',
       data: [totalOperatingTime, totalOperatingTime],
     },
     {
-      name: 'Thời gian máy HĐ thực tế',
+      name: 'TG máy HĐ thực tế',
       data: [
-        ((preHs[0]?.TagValue ?? 0 < 0 ? 0.0 :preHs[0]?.TagValue ?? 0) * totalOperatingTime).toFixed(1),
+        ((preHs[0]?.TagValue ?? 0)) * totalOperatingTime,
         remainingTime,
       ],
     },
     {
-      name: 'Thời gian máy không HĐ',
+      name: 'TG máy không HĐ',
       data: [
         (1 - (preHs[0]?.TagValue ?? 0)) * totalOperatingTime,
         totalInactiveTime,
       ],
     },
   ];
-
   const hsOptions = {
     chart: {
       type: 'bar',
@@ -1205,7 +1241,7 @@ const Dashboard = () => {
     plotOptions: {
       bar: {
         columnWidth: '50%',
-        borderRadius: 4,
+        borderRadius: 3,
       },
     },
     xaxis: {
@@ -1225,37 +1261,58 @@ const Dashboard = () => {
         },
       },
     },
-    legend: { show: false },
+    legend: {
+      show: true,
+      position: 'bottom',
+      horizontalAlign: 'center',
+      fontSize: '10px',
+      labels: {
+        colors: ['#000'], 
+        useSeriesColors: false,
+      },
+      markers: {
+        width: 12,
+        height: 12,
+        radius: 2,
+      },
+      itemMargin: {
+        horizontal: 10,
+        vertical: 4,
+      },
+    },
     tooltip: {
       enabled: true,
       custom: ({ series, seriesIndex, dataPointIndex }) => {
-        const labels = ['Thời gian máy HĐ', 'Thời gian máy HĐ thực tế', 'Thời gian máy không hoạt động'];
-        let html = `<div class="my-tooltip bg-white shadow-md rounded p-2 border text-sm">`;
+        const labels = ['Máy HĐ', 'HĐ Thực tế', 'Không HĐ'];
+        const colors = ['text-blue-800', 'text-green-800', 'text-gray-500'];
+        let html = `<div class="my-tooltip font-bold bg-white text-black rounded-lg p-2 border border-gray-200 text-xs shadow-lg">`;
         labels.forEach((label, i) => {
           const value = series[i][dataPointIndex] || 0;
           html += `
-            <div class="flex justify-between gap-2">
-              <span>${label}</span>
-              <span class="font-semibold">${value.toFixed(2)}h</span>
+            <div class="flex justify-between gap-3">
+              <span class="${colors[i]}">${label}</span>
+              <span class="font-medium">${value.toFixed(1)}h</span>
             </div>`;
         });
         html += `</div>`;
         return html;
       },
-    },
+    }
 
   };
+
+
   const slSeries = [
     {
-      name: 'Sản lượng 24h',
+      name: 'SL 24h',
       data: [0],
     },
     {
-      name: 'Sản lượng thực tế',
+      name: 'SL thực tế',
       data: [0],
     },
     {
-      name: 'Sản lượng thất thoát',
+      name: 'SL thất thoát',
       data: [0],
     },
 
@@ -1297,24 +1354,43 @@ const Dashboard = () => {
         },
       },
     },
-    legend: { show: false },
+    legend: {
+      show: true,
+      position: 'bottom', // hoặc 'top', 'left', 'right'
+      horizontalAlign: 'center',
+      fontSize: '10px',
+      labels: {
+        colors: ['#000'], // màu chữ
+        useSeriesColors: false, // nếu muốn lấy màu từ mảng `colors` của biểu đồ
+      },
+      markers: {
+        width: 12,
+        height: 12,
+        radius: 2,
+      },
+      itemMargin: {
+        horizontal: 10,
+        vertical: 4,
+      },
+    },
     tooltip: {
       enabled: true,
       custom: ({ series, seriesIndex, dataPointIndex }) => {
-        const labels = ['Sản lượng 24h', 'Sản lượng thực tế', 'Sản lượng thất thoát'];
-        let html = `<div class="my-tooltip bg-white shadow-md rounded p-2 border text-sm">`;
+        const labels = ['Máy HĐ', 'HĐ Thực tế', 'Không HĐ'];
+        const colors = ['text-blue-800', 'text-green-800', 'text-gray-500'];
+        let html = `<div class="my-tooltip font-bold bg-white text-black rounded-lg p-2 border border-gray-200 text-xs shadow-lg">`;
         labels.forEach((label, i) => {
           const value = series[i][dataPointIndex] || 0;
           html += `
-            <div class="flex justify-between gap-2">
-              <span>${label}</span>
-              <span class="font-semibold">${value.toFixed(2)}h</span>
+            <div class="flex justify-between gap-3">
+              <span class="${colors[i]}">${label}</span>
+              <span class="font-medium">${value.toFixed(1)}h</span>
             </div>`;
         });
         html += `</div>`;
         return html;
       },
-    },
+    }
   };
 
 
@@ -1392,42 +1468,43 @@ const Dashboard = () => {
       </div>
 
       <div className="flex w-full gap-2 p-2">
-        <div className="w-[40%]">
+        <div className="w-[45%]">
           <Card className="cursor-pointer relative" 
-          style={{ height: 'calc(50vh)' }}>
+          style={{ height: 'calc(54vh)' }}>
             <h1 className="font-roboto text-xl font-semibold">Hiệu suất và sản lượng</h1>
             <div className="flex h-full justify-between">
-            <div className="w-3/4 pr-4 flex flex-col">
-              <ReactApexChart options={hsOptions} series={hsSeries} type="bar" height="350" />
-            </div>
+            <ChartHs dataHs={dataHs} />
+            {/* <div className="w-7/8 pr-4 flex flex-col">
+              <ReactApexChart options={hsOptions} series={hsSeries} type="line" height="300" />
+            </div> */}
+            <ChartSl dataHs={dataSl} />
 
-            <div className="w-1/4 pr-4 flex flex-col">
-              <ReactApexChart options={slOptions} series={slSeries} type="bar" height="350" />
-            </div>
+            {/* <div className="w-1/8 pr-4 flex flex-col">
+              <ReactApexChart options={slOptions} series={slSeries} type="bar" height="300" />
+            </div> */}
           </div>
           </Card>
         </div> 
 
-        <div className="w-[60%]">
-          <Card className="cursor-pointer relative" style={{ height: 'calc(50vh)' }}>
+        <div className="w-[55%]">
+          <Card className="cursor-pointer relative" style={{ height: 'calc(54vh)' }}>
             <h1 className="font-roboto text-xl font-semibold mb-6">Lịch sử máy soi lỗ kim</h1>
               <>           
               <StyledSchedulerFrame>
                 <Scheduler
                 // startDate={startDate}
+                  key={zoomScheduler}
                   data={fixLearData}
                   isLoading={isLoading}
                   onRangeChange={handleRangeChange}
                   onTileClick={(clickedResource) => setSelectedItem(clickedResource)}
                   onItemClick={(item) => console.log(item)}
                   onFilterData={()=> {
-                    console.log("lmao")
                   }}
                   config={{ 
-                    zoom: 2, 
+                    zoom: 0, 
                     maxRecordsPerPage: 50, 
                     showTooltip: false,
-                    showFilterButton: false,
                   }}
                   />
               </StyledSchedulerFrame>
