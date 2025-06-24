@@ -12,6 +12,8 @@ import Coppergraph from "@/components/Coppergraph";
 import CopperDiameterCard from '../../components/TemperatureMonitoringCard/CopperDiameterCard';
 import ReactApexChart from "react-apexcharts";
 
+
+
 const DetailCopperWireData = () => {
   const location = useLocation()
   const cabinetName = location.state

@@ -4,7 +4,6 @@ import cl from "classnames"
 import { toast } from "react-toastify"
 
 function DateInput({ id, label, value, setValue, className, type, dayCompare }) {
-    // type dùng để xác định input dayStart hay Dayend; dayCompare dùng để truyền ngày vào và so sánh-> kiểm tra hợp lệ
     const containerRef = useRef()
 
     const [focus, setFocus] = useState(false)

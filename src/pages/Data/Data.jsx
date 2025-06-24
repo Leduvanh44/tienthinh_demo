@@ -249,7 +249,7 @@ const Data = () => {
 
       <div className={`absolute ${isMobile ? 'bottom-6 right-6' :'bottom-10 right-10'}`}>
         <Card className="p-4">
-          {/* Icon đầu: Operate */}
+          {/* Operate */}
           <div className="flex items-center mb-4">
             <div
               className="p-2 flex items-center justify-center rounded-lg w-[40px] h-[40px] mr-4"
@@ -260,7 +260,7 @@ const Data = () => {
             <span className="text-gray-700 text-sm font-medium">Operating</span>
           </div>
 
-          {/* Icon dưới: Close */}
+          {/* Close */}
           <div className="flex items-center">
             <div
               className="p-2 flex items-center justify-center rounded-lg w-[40px] h-[40px] mr-4"

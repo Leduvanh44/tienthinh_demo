@@ -60,7 +60,32 @@ const CabinetsApi = {
     },
     Report: {
         createReportInfo: async (data) => await axiosClient.post("/Reports", data),
-    }
+        createDiameterReport: async (data) => {
+            try {
+                const response = await axiosClient({
+                    url: "/WireDiameterRecords/Export",
+                    method: "POST",
+                    data: data,
+                    responseType: "blob",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
 
+                const blob = new Blob([response], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+                const downloadUrl = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = downloadUrl;
+                a.download = "wire-diameter-report.xlsx";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                return { status: 200 };
+            } catch (error) {
+                console.error("Error downloading file:", error);
+                throw error;
+            }
+        },
+    }
 }
 export default CabinetsApi

@@ -133,7 +133,7 @@ export default function ChartHs({ dataHs }) {
           label={({ x, y, value }) => (
             <text
               x={x}
-              y={10}  // đẩy label lên cao hơn (thay vì -10)
+              y={10} 
               textAnchor="middle"
               fill="#171389"
               fontSize={14}

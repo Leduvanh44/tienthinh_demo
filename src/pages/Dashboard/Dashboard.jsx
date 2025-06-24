@@ -132,8 +132,8 @@ const Dashboard = () => {
       name: 'Pinhole',
       position: 'left',
       minInterval: 1,
-      nameLocation: 'middle', // tên nằm ở giữa chiều cao trục Y
-      nameGap: 45,            // khoảng cách từ trục đến chữ
+      nameLocation: 'middle', 
+      nameGap: 45,         
       nameTextStyle: {
         fontSize: 16,
         fontFamily: 'Roboto',
@@ -141,7 +141,7 @@ const Dashboard = () => {
         color: '#333',
         align: 'center',
         verticalAlign: 'middle',
-        rotate: 90, // <-- xoay chữ theo chiều dọc
+        rotate: 90, 
       },
       axisLabel: {
         fontSize: 16,
@@ -158,7 +158,7 @@ const Dashboard = () => {
         lineStyle: { width: 2 },
         itemStyle: { color: '#0f175e' },
         data: defects.map(d => [d.time, d.pinhole]),
-        xAxisIndex: 0, // sử dụng trục time
+        xAxisIndex: 0, 
       },
     ],
   });
@@ -1356,12 +1356,12 @@ const Dashboard = () => {
     },
     legend: {
       show: true,
-      position: 'bottom', // hoặc 'top', 'left', 'right'
+      position: 'bottom', //  'top', 'left', 'right'
       horizontalAlign: 'center',
       fontSize: '10px',
       labels: {
-        colors: ['#000'], // màu chữ
-        useSeriesColors: false, // nếu muốn lấy màu từ mảng `colors` của biểu đồ
+        colors: ['#000'], 
+        useSeriesColors: false, 
       },
       markers: {
         width: 12,
@@ -1594,7 +1594,7 @@ const Dashboard = () => {
                   {/* Defects Chart with ECharts */}
                   <div className="mt-5">
                     <h3 className="font-medium mb-2">Defects Chart</h3>
-                    <div className="w-full h-[250px]"> {/* tăng từ h-64 (256px) lên 450px */}
+                    <div className="w-full h-[250px]"> 
                       <ReactECharts
                         option={getChartOption(selectedItem.defects)}
                         style={{ height: '100%', width: '100%' }}

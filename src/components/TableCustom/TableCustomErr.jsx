@@ -11,7 +11,6 @@ const TableCustomErr = forwardRef(({ data }, ref) => {
   const containerRef = useRef(null);
   const [tableWidth, setTableWidth] = useState(0);
 
-  // Cố định chiều rộng cho các cột (tỷ lệ phần trăm hoặc pixel)
   const columnWidths = {
     name: "10%",
     timeStamp: "20%",
@@ -125,10 +124,10 @@ const TableCustomErr = forwardRef(({ data }, ref) => {
           </div>
           {/* Body */}
           <FixedSizeList
-            height={500} // Chiều cao bảng
-            width={tableWidth || "100%"} // Chiều rộng động
+            height={500} 
+            width={tableWidth || "100%"} 
             itemCount={data.length}
-            itemSize={100} // Chiều cao mỗi hàng
+            itemSize={100} 
             className="divide-y divide-gray-200"
           >
             {Row}
