@@ -1,28 +1,60 @@
-Giao diện web gồm 5 trang chính: 
-•	Trang LOGIN: Trang đăng nhập là cổng vào hệ thống, nơi người dùng xác thực thông tin tài khoản để truy cập các trang chức năng.
-•	Trang DASHBOARD: là trang trung tâm hiển thị toàn bộ dữ liệu của toàn bộ hệ thống (theo ca làm việc). 
-•	Trang DATA DETAIL: Trang dữ liệu chi tiết cho phép người dùng đi sâu vào từng thông số cụ thể như nhiệt độ và quạt (Temperature and Fan), đường kính dây đồng (Copper Diameter), lỗi soi lỗ kim (LEAR),...
-•	Trang ERROR HISTORY: Trang lịch sử lỗi hiển thị danh sách các lỗi đã xảy ra trong quá trình vận hành dây chuyền. 
-•	Trang REPORT: Trang báo cáo cho phép người dùng thực hiện ba chức năng chính: xuất biểu đồ phân tích dữ liệu (Report Chart), xuất báo cáo dưới dạng tệp Excel (Export Excel), và xem lại lịch sử các báo cáo đã được tạo trước đó (Report History).
-Ngoài ra, có thể dùng các nút trên sidebar để chuyển giữ các trang chức năng. Cuối sidebar có nút LOGOUT cho phép người dùng đăng xuất. 
-Web hiện tại đang hoạt động và đang được phát triển thêm [http://45.117.177.157:88]
-Liên kết các trang trên giao diện web
+Ứng dụng web gồm **5 trang chính**, hỗ trợ giám sát và quản lý dây chuyền sản xuất trong nhà máy.  
+Hiện tại hệ thống đang hoạt động và tiếp tục được phát triển tại:  
+👉 [http://45.117.177.157:88](http://45.117.177.157:88)
 
-Giao diện trang LOGIN
+---
 
+## 🔐 LOGIN Page
+Trang **đăng nhập** là cổng vào hệ thống, nơi người dùng xác thực thông tin tài khoản để truy cập các chức năng.
 
+<p align="center">
+  <img src="images/login.png" alt="Login Page" width="600">
+</p>
 
-Giao diện trang DASHBOARD
+---
 
+## 📊 DASHBOARD Page
+Trang **trung tâm hiển thị dữ liệu tổng quan** của toàn hệ thống (theo ca làm việc).
 
+<p align="center">
+  <img src="images/dashboard.png" alt="Dashboard Page" width="600">
+</p>
 
-Giao diện trang DATA DETAILS
+---
 
+## 📈 DATA DETAIL Page
+Trang **dữ liệu chi tiết**, cho phép người dùng đi sâu vào từng thông số cụ thể như:
+- Nhiệt độ và quạt (**Temperature and Fan**)  
+- Đường kính dây đồng (**Copper Diameter**)  
+- Lỗi soi lỗ kim (**LEAR**), …
 
- 
-Giao diện trang ERROR HISTORY
+<p align="center">
+  <img src="images/data_detail.png" alt="Data Detail Page" width="600">
+</p>
 
+---
 
- 
-Giao diện trang REPORT.
+## ⚠️ ERROR HISTORY Page
+Trang **lịch sử lỗi**, hiển thị danh sách các lỗi đã xảy ra trong quá trình vận hành dây chuyền.
 
+<p align="center">
+  <img src="images/error_history.png" alt="Error History Page" width="600">
+</p>
+
+---
+
+## 📑 REPORT Page
+Trang **báo cáo**, cho phép người dùng thực hiện ba chức năng chính:
+- 📊 Xuất **biểu đồ phân tích dữ liệu** (Report Chart)  
+- 📂 Xuất **báo cáo dạng Excel** (Export Excel)  
+- 🕓 Xem lại **lịch sử các báo cáo trước đó** (Report History)
+
+<p align="center">
+  <img src="images/report.png" alt="Report Page" width="600">
+</p>
+
+---
+
+### 🧭 Navigation
+- Sử dụng **sidebar** để chuyển nhanh giữa các trang chức năng.  
+- Nút **LOGOUT** ở cuối sidebar giúp người dùng đăng xuất khỏi hệ thống.  
