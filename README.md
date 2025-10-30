@@ -38,7 +38,7 @@ Trang **dữ liệu chi tiết**, cho phép người dùng đi sâu vào từng 
 Trang **lịch sử lỗi**, hiển thị danh sách các lỗi đã xảy ra trong quá trình vận hành dây chuyền.
 
 <p align="center">
-  <img src="images/6.png" alt="Error History Page" width="600">
+  <img src="images/7.png" alt="Error History Page" width="600">
 </p>
 
 ---
@@ -50,7 +50,7 @@ Trang **báo cáo**, cho phép người dùng thực hiện ba chức năng chí
 - 🕓 Xem lại **lịch sử các báo cáo trước đó** (Report History)
 
 <p align="center">
-  <img src="images/7.png" alt="Report Page" width="600">
+  <img src="images/8.png" alt="Report Page" width="600">
 </p>
 
 ---
